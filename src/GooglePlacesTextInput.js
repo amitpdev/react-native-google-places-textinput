@@ -140,12 +140,15 @@ const GooglePlacesTextInput = forwardRef(
       try {
         setLoading(true);
         const API_URL = proxyUrl ? proxyUrl : DEFAULT_GOOGLE_API_URL;
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+        if (apiKey || apiKey != '') {
+          headers['X-Goog-Api-Key'] = apiKey;
+        }
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': apiKey,
-          },
+          headers,
           body: JSON.stringify({
             input: processedText,
             languageCode,
