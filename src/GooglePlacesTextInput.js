@@ -14,6 +14,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Keyboard,
+  I18nManager,
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -35,7 +36,6 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -10 }],
   },
   rtlText: {
-    textAlign: 'right',
     writingDirection: 'rtl',
   },
   suggestionsContainer: {
@@ -60,9 +60,6 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
     textAlign: 'left',
-  },
-  leftAligned: {
-    left: 15,
   },
   rightAligned: {
     right: 15,
@@ -143,7 +140,7 @@ const GooglePlacesTextInput = forwardRef(
         const headers = {
           'Content-Type': 'application/json',
         };
-        if (apiKey || apiKey != '') {
+        if (apiKey || apiKey !== '') {
           headers['X-Goog-Api-Key'] = apiKey;
         }
         const response = await fetch(API_URL, {
@@ -202,8 +199,7 @@ const GooglePlacesTextInput = forwardRef(
     };
 
     // Update text alignment based on language
-    const isRTL =
-      languageCode?.startsWith('he') || languageCode?.startsWith('ar');
+    const isRTL = I18nManager.isRTL;
 
     const renderSuggestion = ({ item }) => {
       const { mainText, secondaryText } = item.placePrediction.structuredFormat;
@@ -276,14 +272,10 @@ const GooglePlacesTextInput = forwardRef(
             onChangeText={handleTextChange}
             onFocus={handleFocus}
             onBlur={() => setShowSuggestions(false)}
-            textAlign={isRTL ? 'right' : 'left'}
           />
           {loading && showLoadingIndicator && (
             <ActivityIndicator
-              style={[
-                styles.loadingIndicator,
-                isRTL ? styles.leftAligned : styles.rightAligned,
-              ]}
+              style={[styles.loadingIndicator, styles.rightAligned]}
               size={'small'}
               color={style.loadingIndicator?.color || '#000000'} // Default color
             />
