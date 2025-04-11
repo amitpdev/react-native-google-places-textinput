@@ -46,9 +46,19 @@
     "release": "release-it"
   },
   "keywords": [
-    "react-native",
+    "address",
+    "android",
+    "autocomplete",
+    "geolocation",
+    "google",
+    "google-places-api",
     "ios",
-    "android"
+    "place-autocomplete",
+    "places",
+    "react-native",
+    "react-native-component",
+    "search",
+    "textinput"
   ],
   "repository": {
     "type": "git",
