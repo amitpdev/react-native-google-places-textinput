@@ -96,6 +96,7 @@ const YourComponent = () => {
 | apiKey | string | Yes | - | Your Google Places API key |
 | value | string | No | '' | Initial input value |
 | placeHolderText | string | No | - | Placeholder text for input |
+| proxyUrl | string | No | - | Custom proxy URL for Places API requests |
 | languageCode | string | No | - | Language code (e.g., 'en', 'fr') |
 | includedRegionCodes | string[] | No | - | Array of region codes to filter results |
 | types | string[] | No | [] | Array of place types to filter |
