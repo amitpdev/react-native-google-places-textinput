@@ -69,12 +69,15 @@ const styles = StyleSheet.create({
   },
 });
 
+const DEFAULT_GOOGLE_API_URL =
+  'https://places.googleapis.com/v1/places:autocomplete';
 const GooglePlacesTextInput = forwardRef(
   (
     {
       apiKey,
       value,
       placeHolderText,
+      proxyUrl,
       languageCode,
       includedRegionCodes,
       types = [],
@@ -136,22 +139,23 @@ const GooglePlacesTextInput = forwardRef(
 
       try {
         setLoading(true);
-        const response = await fetch(
-          'https://places.googleapis.com/v1/places:autocomplete',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Goog-Api-Key': apiKey,
-            },
-            body: JSON.stringify({
-              input: processedText,
-              languageCode,
-              ...(includedRegionCodes?.length > 0 && { includedRegionCodes }),
-              ...(types.length > 0 && { includedPrimaryTypes: types }),
-            }),
-          }
-        );
+        const API_URL = proxyUrl ? proxyUrl : DEFAULT_GOOGLE_API_URL;
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+        if (apiKey || apiKey != '') {
+          headers['X-Goog-Api-Key'] = apiKey;
+        }
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            input: processedText,
+            languageCode,
+            ...(includedRegionCodes?.length > 0 && { includedRegionCodes }),
+            ...(types.length > 0 && { includedPrimaryTypes: types }),
+          }),
+        });
 
         const data = await response.json();
 
