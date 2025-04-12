@@ -81,6 +81,7 @@ const GooglePlacesTextInput = forwardRef(
       biasPrefixText,
       minCharsToFetch = 1,
       onPlaceSelect,
+      onTextChange,
       debounceDelay = 200,
       showLoadingIndicator = true,
       style = {},
@@ -172,7 +173,8 @@ const GooglePlacesTextInput = forwardRef(
 
     const handleTextChange = (text) => {
       setInputText(text);
-      onPlaceSelect(null); // Notify parent when text changes
+      onPlaceSelect(null);
+      onTextChange?.(text);
 
       if (debounceTimeout.current) {
         clearTimeout(debounceTimeout.current);
@@ -190,7 +192,7 @@ const GooglePlacesTextInput = forwardRef(
       onPlaceSelect(place); // Notify parent with selected place
     };
 
-    // Show suggestions on focus if text length > 1
+    // Show suggestions on focus if text length > minCharsToFetch
     const handleFocus = () => {
       if (inputText.length >= minCharsToFetch) {
         fetchPredictions(inputText);

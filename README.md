@@ -106,6 +106,7 @@ const YourComponent = () => {
 | debounceDelay | number | No | 200 | Delay before triggering search |
 | showLoadingIndicator | boolean | No | true | Show/hide loading indicator |
 | style | StyleProp | No | {} | Custom styles object |
+| onTextChange | (text: string) => void | No | - | Callback triggered on text input changes |
 
 ## Methods
 
