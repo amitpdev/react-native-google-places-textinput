@@ -15,56 +15,8 @@ import {
   ActivityIndicator,
   Keyboard,
   I18nManager,
+  Platform,
 } from 'react-native';
-
-const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginTop: 10,
-  },
-  input: {
-    height: 50,
-    borderRadius: 6,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    backgroundColor: 'white',
-    fontSize: 16,
-  },
-  loadingIndicator: {
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: -10 }],
-  },
-  rtlText: {
-    writingDirection: 'rtl',
-  },
-  suggestionsContainer: {
-    backgroundColor: '#efeff1', // default background
-    borderRadius: 6,
-    marginTop: 3,
-    overflow: 'hidden',
-    maxHeight: 200,
-  },
-  suggestionItem: {
-    padding: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#c8c7cc',
-  },
-  mainText: {
-    fontSize: 16,
-    textAlign: 'left',
-    color: '#000000',
-  },
-  secondaryText: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-    textAlign: 'left',
-  },
-  rightAligned: {
-    right: 15,
-  },
-});
 
 const DEFAULT_GOOGLE_API_URL =
   'https://places.googleapis.com/v1/places:autocomplete';
@@ -84,6 +36,7 @@ const GooglePlacesTextInput = forwardRef(
       onTextChange,
       debounceDelay = 200,
       showLoadingIndicator = true,
+      showClearButton = true,
       style = {},
     },
     ref
@@ -267,19 +220,55 @@ const GooglePlacesTextInput = forwardRef(
         <View>
           <TextInput
             ref={inputRef}
-            style={[styles.input, style.input]}
+            style={[
+              styles.input,
+              style.input,
+              { paddingRight: showClearButton ? 75 : 45 }, // Adjust padding based on clear button visibility
+            ]}
             placeholder={placeHolderText}
-            placeholderTextColor={style.placeholder?.color || '#666666'} // Default color
+            placeholderTextColor={style.placeholder?.color || '#666666'}
             value={inputText}
             onChangeText={handleTextChange}
             onFocus={handleFocus}
             onBlur={() => setShowSuggestions(false)}
+            clearButtonMode="never" // Disable iOS native clear button
           />
+
+          {/* Clear button - shown only if showClearButton is true */}
+          {showClearButton && inputText !== '' && (
+            <TouchableOpacity
+              style={[isRTL ? styles.leftIcon : styles.rightIcon]}
+              onPress={() => {
+                setInputText('');
+                setPredictions([]);
+                setShowSuggestions(false);
+                onPlaceSelect?.(null);
+                onTextChange?.('');
+                inputRef.current?.focus();
+              }}
+            >
+              <Text
+                style={Platform.select({
+                  ios: styles.iOSclearButton,
+                  android: styles.androidClearButton,
+                })}
+              >
+                {'×'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Loading indicator - position adjusts based on showClearButton */}
           {loading && showLoadingIndicator && (
             <ActivityIndicator
-              style={[styles.loadingIndicator, styles.rightAligned]}
+              style={[
+                isRTL ? styles.leftLoadingIcon : styles.rightLoadingIcon,
+                !showClearButton &&
+                  (isRTL ? styles.leftEdge : styles.rightEdge),
+                styles.loadingIndicator,
+              ]}
               size={'small'}
-              color={style.loadingIndicator?.color || '#000000'} // Default color
+              color={style.loadingIndicator?.color || '#000000'}
             />
           )}
         </View>
@@ -288,5 +277,112 @@ const GooglePlacesTextInput = forwardRef(
     );
   }
 );
+
+const styles = StyleSheet.create({
+  container: {
+    marginHorizontal: 16,
+    marginTop: 10,
+  },
+  input: {
+    height: 50,
+    borderRadius: 6,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    backgroundColor: 'white',
+    fontSize: 16,
+  },
+  loadingIndicator: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -10 }],
+  },
+  rtlText: {
+    writingDirection: 'rtl',
+  },
+  suggestionsContainer: {
+    backgroundColor: '#efeff1', // default background
+    borderRadius: 6,
+    marginTop: 3,
+    overflow: 'hidden',
+    maxHeight: 200,
+  },
+  suggestionItem: {
+    padding: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#c8c7cc',
+  },
+  mainText: {
+    fontSize: 16,
+    textAlign: 'left',
+    color: '#000000',
+  },
+  secondaryText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+    textAlign: 'left',
+  },
+  rightAligned: {
+    right: 15,
+  },
+  rightIcon: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -13 }],
+    right: 12,
+    padding: 0,
+  },
+  leftIcon: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -13 }],
+    left: 12,
+    padding: 0,
+  },
+  rightLoadingIcon: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    right: 45,
+  },
+  leftLoadingIcon: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    left: 45,
+  },
+  rightEdge: {
+    right: 12,
+  },
+  leftEdge: {
+    left: 12,
+  },
+  iOSclearButton: {
+    fontSize: 18,
+    fontWeight: '400',
+    color: 'white',
+    backgroundColor: '#999',
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    lineHeight: 19,
+    includeFontPadding: false,
+  },
+  androidClearButton: {
+    fontSize: 24,
+    fontWeight: '400',
+    color: 'white',
+    backgroundColor: '#999',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    lineHeight: 20,
+    includeFontPadding: false,
+  },
+});
 
 export default GooglePlacesTextInput;
