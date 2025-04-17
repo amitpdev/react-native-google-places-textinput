@@ -142,6 +142,7 @@ const GooglePlacesTextInput = forwardRef(
       const place = suggestion.placePrediction;
       setInputText(place.structuredFormat.mainText.text);
       setShowSuggestions(false);
+      Keyboard.dismiss();
       onPlaceSelect(place); // Notify parent with selected place
     };
 
