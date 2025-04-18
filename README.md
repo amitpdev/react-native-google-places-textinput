@@ -13,8 +13,13 @@ A customizable React Native TextInput component for Google Places Autocomplete u
 - 🔍 Custom place types filtering
 - 🌐 Multi-language support
 
-## Screenshot
-<img src="https://github.com/user-attachments/assets/1eb0c4da-4a2e-453e-a6b4-d63bf7fa4d20" width="320"/>
+## Preview
+
+<table>
+  <tr>
+    <td><img width="260" src="assets/places-search-demo.gif" alt="Places Search Demo"></td>
+  </tr>
+</table>
 
 ## Installation
 
@@ -31,17 +36,67 @@ yarn add react-native-google-places-textinput
 
 ## Usage
 
+### Basic Example
 ```javascript
 import GooglePlacesTextInput from 'react-native-google-places-textinput';
 
 const YourComponent = () => {
   const handlePlaceSelect = (place) => {
-    if (place) {
-      console.log('Selected place:', place);
+    console.log('Selected place:', place);
+  };
+
+  const basicStyles = {
+    container: {
+      width: '100%',  // Ensure full width
+      paddingHorizontal: 16,
+    },
+    input: {
+      height: 40,  // Comfortable touch target
     }
   };
 
-  // Example with custom styles
+  return (
+    <GooglePlacesTextInput
+      apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+      onPlaceSelect={handlePlaceSelect}
+      style={basicStyles}
+    />
+  );
+};
+```
+
+<details>
+<summary>Example with Places API Configuration</summary>
+
+```javascript
+const ConfiguredExample = () => {
+  const handlePlaceSelect = (place) => {
+    console.log('Selected place:', place);
+  };
+
+  return (
+    <GooglePlacesTextInput
+      apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+      onPlaceSelect={handlePlaceSelect}
+      languageCode="fr"
+      types={['restaurant', 'cafe']}
+      includedRegionCodes={['fr', 'be']}
+      minCharsToFetch={2}
+    />
+  );
+};
+```
+</details>
+
+<details>
+<summary>Example with Full Styling</summary>
+
+```javascript
+const StyledExample = () => {
+  const handlePlaceSelect = (place) => {
+    console.log('Selected place:', place);
+  };
+
   const customStyles = {
     container: {
       width: '100%',
@@ -82,30 +137,36 @@ const YourComponent = () => {
       apiKey="YOUR_GOOGLE_PLACES_API_KEY"
       placeHolderText="Search for a place"
       onPlaceSelect={handlePlaceSelect}
-      languageCode="en"
       style={customStyles}
     />
   );
 };
 ```
+</details>
 
 ## Props
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
+| **Essential Props** |
 | apiKey | string | Yes | - | Your Google Places API key |
+| **Input Configuration** |
 | value | string | No | '' | Initial input value |
 | placeHolderText | string | No | - | Placeholder text for input |
+| minCharsToFetch | number | No | 1 | Minimum characters before fetching |
+| debounceDelay | number | No | 200 | Delay before triggering search |
+| **Places API Configuration** |
 | proxyUrl | string | No | - | Custom proxy URL for Places API requests |
 | languageCode | string | No | - | Language code (e.g., 'en', 'fr') |
 | includedRegionCodes | string[] | No | - | Array of region codes to filter results |
 | types | string[] | No | [] | Array of place types to filter |
 | biasPrefixText | string | No | - | Text to prepend to search query |
-| minCharsToFetch | number | No | 1 | Minimum characters before fetching |
-| onPlaceSelect | (place: Place \| null) => void | Yes | - | Callback when place is selected |
-| debounceDelay | number | No | 200 | Delay before triggering search |
-| showLoadingIndicator | boolean | No | true | Show/hide loading indicator |
+| **UI Customization** |
 | style | StyleProp | No | {} | Custom styles object |
+| showLoadingIndicator | boolean | No | true | Show/hide loading indicator |
+| showClearButton | boolean | No | true | Show/hide the input clear button |
+| **Event Handlers** |
+| onPlaceSelect | (place: Place \| null) => void | Yes | - | Callback when place is selected |
 | onTextChange | (text: string) => void | No | - | Callback triggered on text input changes |
 
 ## Methods
@@ -155,5 +216,7 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 MIT
 
 ---
+
+Written by Amit Palomo
 
 Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
