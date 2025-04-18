@@ -20,6 +20,7 @@ import {
 
 const DEFAULT_GOOGLE_API_URL =
   'https://places.googleapis.com/v1/places:autocomplete';
+
 const GooglePlacesTextInput = forwardRef(
   (
     {
@@ -37,6 +38,7 @@ const GooglePlacesTextInput = forwardRef(
       debounceDelay = 200,
       showLoadingIndicator = true,
       showClearButton = true,
+      forceRTL = undefined,
       style = {},
     },
     ref
@@ -154,8 +156,11 @@ const GooglePlacesTextInput = forwardRef(
       }
     };
 
-    // Update text alignment based on language
-    const isRTL = I18nManager.isRTL;
+    // RTL detection logic
+    const isRTL =
+      forceRTL !== undefined
+        ? forceRTL
+        : isRTLText(placeHolderText) || I18nManager.isRTL;
 
     const renderSuggestion = ({ item }) => {
       const { mainText, secondaryText } = item.placePrediction.structuredFormat;
@@ -177,7 +182,7 @@ const GooglePlacesTextInput = forwardRef(
             style={[
               styles.mainText,
               style.suggestionText?.main,
-              isRTL && styles.rtlText,
+              { textAlign: isRTL ? 'right' : 'left' },
             ]}
           >
             {mainText.text}
@@ -187,7 +192,7 @@ const GooglePlacesTextInput = forwardRef(
               style={[
                 styles.secondaryText,
                 style.suggestionText?.secondary,
-                isRTL && styles.rtlText,
+                { textAlign: isRTL ? 'right' : 'left' },
               ]}
             >
               {secondaryText.text}
@@ -224,7 +229,13 @@ const GooglePlacesTextInput = forwardRef(
             style={[
               styles.input,
               style.input,
-              { paddingRight: showClearButton ? 75 : 45 }, // Adjust padding based on clear button visibility
+              {
+                // Icons are on the left when RTL, so add more padding on left
+                paddingLeft: isRTL ? (showClearButton ? 75 : 45) : 15,
+                // Icons are on the right when LTR, so add more padding on right
+                paddingRight: isRTL ? 15 : showClearButton ? 75 : 45,
+                textAlign: isRTL ? 'right' : 'left',
+              },
             ]}
             placeholder={placeHolderText}
             placeholderTextColor={style.placeholder?.color || '#666666'}
@@ -385,5 +396,15 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
 });
+
+const isRTLText = (text) => {
+  if (!text) return false;
+  // Hebrew: \u0590-\u05FF
+  // Arabic: \u0600-\u06FF, \u0750-\u077F (Arabic Supplement), \u0870-\u089F (Arabic Extended-B)
+  // Arabic Presentation Forms: \uFB50-\uFDFF, \uFE70-\uFEFF
+  const rtlRegex =
+    /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u0870-\u089F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  return rtlRegex.test(text);
+};
 
 export default GooglePlacesTextInput;
