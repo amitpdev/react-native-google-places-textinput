@@ -158,9 +158,7 @@ const GooglePlacesTextInput = forwardRef(
 
     // RTL detection logic
     const isRTL =
-      forceRTL !== undefined
-        ? forceRTL
-        : isRTLText(placeHolderText) || I18nManager.isRTL;
+      forceRTL !== undefined ? forceRTL : isRTLText(placeHolderText);
 
     const renderSuggestion = ({ item }) => {
       const { mainText, secondaryText } = item.placePrediction.structuredFormat;
@@ -182,7 +180,7 @@ const GooglePlacesTextInput = forwardRef(
             style={[
               styles.mainText,
               style.suggestionText?.main,
-              { textAlign: isRTL ? 'right' : 'left' },
+              getTextAlign(),
             ]}
           >
             {mainText.text}
@@ -192,7 +190,7 @@ const GooglePlacesTextInput = forwardRef(
               style={[
                 styles.secondaryText,
                 style.suggestionText?.secondary,
-                { textAlign: isRTL ? 'right' : 'left' },
+                getTextAlign(),
               ]}
             >
               {secondaryText.text}
@@ -221,6 +219,40 @@ const GooglePlacesTextInput = forwardRef(
       );
     };
 
+    const getPadding = () => {
+      const physicalRTL = I18nManager.isRTL;
+      const clearButtonPadding = showClearButton ? 75 : 45;
+      if (isRTL !== physicalRTL) {
+        return {
+          paddingStart: clearButtonPadding,
+          paddingEnd: 15,
+        };
+      }
+      return {
+        paddingStart: 15,
+        paddingEnd: clearButtonPadding,
+      };
+    };
+
+    const getTextAlign = () => {
+      const isDeviceRTL = I18nManager.isRTL;
+      if (isDeviceRTL) {
+        // Device is RTL, so "left" and "right" are swapped
+        return { textAlign: isRTL ? 'left' : 'right' };
+      } else {
+        // Device is LTR, normal behavior
+        return { textAlign: isRTL ? 'right' : 'left' };
+      }
+    };
+
+    const getIconPosition = (paddingValue) => {
+      const physicalRTL = I18nManager.isRTL;
+      if (isRTL !== physicalRTL) {
+        return { start: paddingValue };
+      }
+      return { end: paddingValue };
+    };
+
     return (
       <View style={[styles.container, style.container]}>
         <View>
@@ -229,13 +261,8 @@ const GooglePlacesTextInput = forwardRef(
             style={[
               styles.input,
               style.input,
-              {
-                // Icons are on the left when RTL, so add more padding on left
-                paddingLeft: isRTL ? (showClearButton ? 75 : 45) : 15,
-                // Icons are on the right when LTR, so add more padding on right
-                paddingRight: isRTL ? 15 : showClearButton ? 75 : 45,
-                textAlign: isRTL ? 'right' : 'left',
-              },
+              getPadding(),
+              { textAlign: isRTL ? 'right' : 'left' },
             ]}
             placeholder={placeHolderText}
             placeholderTextColor={style.placeholder?.color || '#666666'}
@@ -249,7 +276,7 @@ const GooglePlacesTextInput = forwardRef(
           {/* Clear button - shown only if showClearButton is true */}
           {showClearButton && inputText !== '' && (
             <TouchableOpacity
-              style={[isRTL ? styles.leftIcon : styles.rightIcon]}
+              style={[styles.clearButton, getIconPosition(12)]}
               onPress={() => {
                 setInputText('');
                 setPredictions([]);
@@ -273,12 +300,7 @@ const GooglePlacesTextInput = forwardRef(
           {/* Loading indicator - position adjusts based on showClearButton */}
           {loading && showLoadingIndicator && (
             <ActivityIndicator
-              style={[
-                isRTL ? styles.leftLoadingIcon : styles.rightLoadingIcon,
-                !showClearButton &&
-                  (isRTL ? styles.leftEdge : styles.rightEdge),
-                styles.loadingIndicator,
-              ]}
+              style={[styles.loadingIndicator, getIconPosition(45)]}
               size={'small'}
               color={style.loadingIndicator?.color || '#000000'}
             />
@@ -303,14 +325,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     fontSize: 16,
   },
-  loadingIndicator: {
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: -10 }],
-  },
-  rtlText: {
-    writingDirection: 'rtl',
-  },
   suggestionsContainer: {
     backgroundColor: '#efeff1', // default background
     borderRadius: 6,
@@ -334,40 +348,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'left',
   },
-  rightAligned: {
-    right: 15,
-  },
-  rightIcon: {
+  clearButton: {
     position: 'absolute',
     top: '50%',
     transform: [{ translateY: -13 }],
-    right: 12,
     padding: 0,
   },
-  leftIcon: {
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: -13 }],
-    left: 12,
-    padding: 0,
-  },
-  rightLoadingIcon: {
+  loadingIndicator: {
     position: 'absolute',
     top: '50%',
     transform: [{ translateY: -10 }],
-    right: 45,
-  },
-  leftLoadingIcon: {
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: -10 }],
-    left: 45,
-  },
-  rightEdge: {
-    right: 12,
-  },
-  leftEdge: {
-    left: 12,
   },
   iOSclearButton: {
     fontSize: 18,
