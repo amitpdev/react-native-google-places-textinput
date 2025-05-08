@@ -12,7 +12,7 @@ A customizable React Native TextInput component for Google Places Autocomplete u
 - 🔍 Custom place types filtering
 - 🌍 RTL support
 - 🌐 Multi-language support
-- 🎯 TypeScript support
+- 🎯 TypeScript support (coming soon...)
 
 ## Preview
 
