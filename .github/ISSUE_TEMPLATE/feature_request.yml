@@ -1,0 +1,31 @@
+name: 🚀 Feature request
+description: Suggest an idea or enhancement for this library.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Feature request
+
+        👋 Hi!
+
+        **Thank you for suggesting a new feature for this library.**
+  - type: checkboxes
+    attributes:
+      label: Before submitting a feature request
+      description: Please check these items before proceeding.
+      options:
+        - label: I have searched the existing issues to ensure this feature hasn't been requested already.
+          required: true
+        - label: I am using the latest version of the library.
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature description
+      description: |
+        Provide a clear and detailed description of the feature you're proposing.
+        How would it benefit users of the library?
+    validations:
+      required: true
+
