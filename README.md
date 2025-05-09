@@ -1,4 +1,4 @@
-# React Native Google Places TextInput
+# React Native Google Places Autocomplete TextInput
 
 A customizable React Native TextInput component for Google Places Autocomplete using the Places API (New)
 
@@ -6,7 +6,7 @@ A customizable React Native TextInput component for Google Places Autocomplete u
 
 - 🎨 Fully customizable UI
 - ⌨️ Debounced search
-- 🗑️ Clear button support
+- 🗑️ Clear button (x)
 - 🔄 Loading indicator
 - 📱 Keyboard-aware
 - 🔍 Custom place types filtering
@@ -32,8 +32,13 @@ yarn add react-native-google-places-textinput
 
 ## Prerequisites
 
-- Get a Google Places API key from the [Google Cloud Console](https://console.cloud.google.com/)
-- Enable Places API (New) in your Google Cloud Project
+1. **Enable the Places API (New)** in your Google Cloud Project
+   - This component specifically requires the new `Places API (New)`, not the legacy `Places API`
+   - In the [Google Cloud Console](https://console.cloud.google.com/), go to `APIs & Services` > `Library` and search for "*Places API (New)*"
+
+2. **Create an API key**
+   - Go to "APIs & Services" > "Credentials" and create a new API key
+   - Under "API restrictions", make sure "Places API (New)" is selected
 
 ## Usage
 
