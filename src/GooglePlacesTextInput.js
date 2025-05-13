@@ -40,6 +40,7 @@ const GooglePlacesTextInput = forwardRef(
       showClearButton = true,
       forceRTL = undefined,
       style = {},
+      hideOnKeyboardDismiss = false,
     },
     ref
   ) => {
@@ -60,15 +61,19 @@ const GooglePlacesTextInput = forwardRef(
 
     // Add keyboard listener
     useEffect(() => {
-      const keyboardDidHideSubscription = Keyboard.addListener(
-        'keyboardDidHide',
-        () => setShowSuggestions(false)
-      );
+      if (hideOnKeyboardDismiss) {
+        const keyboardDidHideSubscription = Keyboard.addListener(
+          'keyboardDidHide',
+          () => setShowSuggestions(false)
+        );
 
-      return () => {
-        keyboardDidHideSubscription.remove();
-      };
-    }, []);
+        return () => {
+          keyboardDidHideSubscription.remove();
+        };
+      }
+      // Return empty cleanup function if not using the listener
+      return () => {};
+    }, [hideOnKeyboardDismiss]);
 
     // Expose methods to parent through ref
     useImperativeHandle(ref, () => ({

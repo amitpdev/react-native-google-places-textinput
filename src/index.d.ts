@@ -89,6 +89,12 @@ export interface GooglePlacesTextInputProps extends TextInputProps {
    * Whether to disable suggestions dropdown
    */
   disableSuggestions?: boolean;
+
+  /**
+   * Whether to hide suggestions when keyboard is dismissed
+   * @default false
+   */
+  hideOnKeyboardDismiss?: boolean;
 }
 
 export interface GooglePrediction {

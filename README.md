@@ -4,15 +4,15 @@ A customizable React Native TextInput component for Google Places Autocomplete u
 
 ## Features
 
-- 🎨 Fully customizable UI
-- ⌨️ Debounced search
-- 🗑️ Clear button (x)
-- 🔄 Loading indicator
-- 📱 Keyboard-aware
-- 🔍 Custom place types filtering
-- 🌍 RTL support
-- 🌐 Multi-language support
-- 🎯 TypeScript support
+- Fully customizable UI
+- Debounced search
+- Clear button (x)
+- Loading indicator
+- Keyboard-aware
+- Custom place types filtering
+- RTL support
+- Multi-language support
+- TypeScript support
 
 ## Preview
 
@@ -172,6 +172,7 @@ const StyledExample = () => {
 | showLoadingIndicator | boolean | No | true | Show/hide loading indicator |
 | showClearButton | boolean | No | true | Show/hide the input clear button |
 | forceRTL | boolean | No | undefined | Force RTL layout direction |
+hideOnKeyboardDismiss | boolean | No | false | Hide suggestions when keyboard is dismissed
 | **Event Handlers** |
 | onPlaceSelect | (place: Place \| null) => void | Yes | - | Callback when place is selected |
 | onTextChange | (text: string) => void | No | - | Callback triggered on text input changes |
