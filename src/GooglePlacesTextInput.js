@@ -318,10 +318,7 @@ const GooglePlacesTextInput = forwardRef(
 );
 
 const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginTop: 10,
-  },
+  container: {},
   input: {
     height: 50,
     borderRadius: 6,
