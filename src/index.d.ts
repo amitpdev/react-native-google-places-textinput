@@ -14,7 +14,10 @@ export interface GooglePlacesTextInputProps extends TextInputProps {
    * Callback that is called when a place is selected
    * Includes the selected place data and session token
    */
-  onPlaceSelect: (place: GooglePlaceData | null, sessionToken?: string) => void;
+  onPlaceSelect?: (
+    place: GooglePlaceData | null,
+    sessionToken?: string
+  ) => void;
 
   /**
    * Callback that is called when text input changes
@@ -107,8 +110,40 @@ export interface GooglePlacesTextInputProps extends TextInputProps {
       color?: string;
     };
   };
+
+  /**
+   * Whether to fetch place details when a place is selected
+   * @default false
+   */
+  fetchDetails?: boolean;
+
+  /**
+   * Custom proxy URL for Google Place Details API requests
+   * If not provided, uses the default Google Place Details API
+   */
+  detailsProxyUrl?: string;
+
+  /**
+   * Fields to include in the place details response
+   * @see https://developers.google.com/maps/documentation/places/web-service/place-details#fieldmask
+   */
+  detailsFields?: string[];
+
+  /**
+   * Initial value for the input field
+   */
+  value?: string;
+
+  /**
+   * Callback for when an error occurs during API requests
+   * Called for both autocomplete prediction errors and place details errors
+   */
+  onError?: (error: Error) => void;
 }
 
+/**
+ * Google Places API prediction object
+ */
 export interface GooglePrediction {
   placePrediction: {
     /**
@@ -149,7 +184,35 @@ export interface GooglePlaceData {
   };
 
   /**
-   * Additional place details when available
+   * Detailed place information
+   * Only available when fetchDetails prop is true
+   */
+  details?: {
+    location?: {
+      latitude: number;
+      longitude: number;
+    };
+    viewport?: {
+      northeast: {
+        lat: number;
+        lng: number;
+      };
+      southwest: {
+        lat: number;
+        lng: number;
+      };
+    };
+    formattedAddress?: string;
+    addressComponents?: Array<{
+      longText: string;
+      shortText: string;
+      types: string[];
+    }>;
+    [key: string]: any;
+  };
+
+  /**
+   * Additional place data when available
    */
   [key: string]: any;
 }

@@ -14,6 +14,7 @@ A customizable React Native TextInput component for Google Places Autocomplete u
 - Multi-language support
 - TypeScript support
 - Session token support for reduced billing costs
+- Extended place details fetching (Optional)
 
 ## Preview
 
@@ -185,6 +186,48 @@ const SessionTokenExample = () => {
 ```
 </details>
 
+<details>
+<summary>Example with Place Details Fetching</summary>
+
+```javascript
+const PlaceDetailsExample = () => {
+  const handlePlaceSelect = (place) => {
+    console.log('Selected place:', place);
+    
+    // Access detailed place information 
+    if (place.details) {
+      console.log('Address components:', place.details.addressComponents);
+      console.log('Geometry:', place.details.geometry);
+      console.log('Photos:', place.details.photos);
+      // And other fields you requested
+    }
+  };
+
+  const handleError = (error) => {
+    console.error('API error:', error);
+  };
+
+  return (
+    <GooglePlacesTextInput
+      apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+      onPlaceSelect={handlePlaceSelect}
+      onError={handleError}
+      fetchDetails={true}
+      detailsFields={[
+        'address_components',
+        'formatted_address',
+        'geometry',
+        'viewport',
+        'photos',
+        'place_id',
+        'types'
+      ]}
+    />
+  );
+};
+```
+</details>
+
 ## Props
 
 | Prop | Type | Required | Default | Description |
@@ -202,6 +245,10 @@ const SessionTokenExample = () => {
 | includedRegionCodes | string[] | No | - | Array of region codes to filter results |
 | types | string[] | No | [] | Array of place types to filter |
 | biasPrefixText | string | No | - | Text to prepend to search query |
+| **Place Details Configuration** |
+| fetchDetails | boolean | No | false | Automatically fetch place details when a place is selected |
+| detailsProxyUrl | string | No | null | Custom proxy URL for place details requests |
+| detailsFields | string[] | No | [] | Array of fields to include in the place details response |
 | **UI Customization** |
 | style | StyleProp | No | {} | Custom styles object |
 | showLoadingIndicator | boolean | No | true | Show/hide loading indicator |
@@ -211,25 +258,37 @@ hideOnKeyboardDismiss | boolean | No | false | Hide suggestions when keyboard is
 | **Event Handlers** |
 | onPlaceSelect | (place: Place \| null, sessionToken?: string) => void | Yes | - | Callback when place is selected |
 | onTextChange | (text: string) => void | No | - | Callback triggered on text input changes |
+| onError | (error: any) => void | No | - | Callback for handling API errors |
+
+## Place Details Fetching
+
+You can automatically fetch detailed place information when a user selects a place suggestion by enabling the `fetchDetails` prop:
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  fetchDetails={true}
+  detailsFields={['formatted_address', 'geometry', 'viewport', 'photos']}
+  onPlaceSelect={(place) => console.log(place.details)}
+/>
+```
+
+When `fetchDetails` is enabled:
+1. The component fetches place details immediately when a user selects a place suggestion
+2. The details are attached to the place object passed to your `onPlaceSelect` callback in the `details` property
+3. Use the `detailsFields` prop to specify which fields to include in the response, reducing API costs
+
+For a complete list of available fields, see the [Place Details API documentation](https://developers.google.com/maps/documentation/places/web-service/place-details#fieldmask).
 
 ## Session Tokens and Billing
 
-This component implements automatic session token management to help reduce your Google Places API billing costs:
+This component automatically manages session tokens to optimize your Google Places API billing:
 
-- A session token is automatically generated when the component mounts
-- The same token is used for all autocomplete requests in a session
-- When a place is selected, the token is passed to your `onPlaceSelect` callback
-- Session tokens are automatically reset:
-  - After a place is selected
-  - When the input is manually cleared using the clear button
-  - When the `clear()` method is called programmatically
+- A session token is generated when the component mounts
+- The same token is automatically used for all autocomplete requests and place details requests
+- The component automatically resets tokens after place selection, input clearing, or calling `clear()`
 
-**How this reduces costs:**
-When you make a series of autocomplete requests followed by a place details request using the same session token, Google Places API charges you only once for the entire session rather than for each individual request.
-
-To benefit from this billing optimization:
-1. Use the session token passed to your `onPlaceSelect` handler when making subsequent place details requests
-2. No configuration is required - the feature works automatically
+**Note:** This automatic session token management ensures Google treats your autocomplete and details requests as part of the same session, reducing your billing costs with no additional configuration needed.
 
 ## Methods
 

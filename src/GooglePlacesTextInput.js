@@ -18,8 +18,13 @@ import {
   Platform,
 } from 'react-native';
 
-const DEFAULT_GOOGLE_API_URL =
-  'https://places.googleapis.com/v1/places:autocomplete';
+// Import the API functions
+import {
+  fetchPredictions as fetchPredictionsApi,
+  fetchPlaceDetails as fetchPlaceDetailsApi,
+  generateUUID,
+  isRTLText,
+} from './services/googlePlacesApi';
 
 const GooglePlacesTextInput = forwardRef(
   (
@@ -41,6 +46,10 @@ const GooglePlacesTextInput = forwardRef(
       forceRTL = undefined,
       style = {},
       hideOnKeyboardDismiss = false,
+      fetchDetails = false,
+      detailsProxyUrl = null,
+      detailsFields = [],
+      onError,
     },
     ref
   ) => {
@@ -49,6 +58,7 @@ const GooglePlacesTextInput = forwardRef(
     const [inputText, setInputText] = useState(value || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [sessionToken, setSessionToken] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
     const debounceTimeout = useRef(null);
     const inputRef = useRef(null);
 
@@ -103,51 +113,57 @@ const GooglePlacesTextInput = forwardRef(
         return;
       }
 
-      const processedText = biasPrefixText ? biasPrefixText(text) : text;
+      setLoading(true);
 
-      try {
-        setLoading(true);
-        const API_URL = proxyUrl ? proxyUrl : DEFAULT_GOOGLE_API_URL;
-        const headers = {
-          'Content-Type': 'application/json',
-        };
-        if (apiKey || apiKey !== '') {
-          headers['X-Goog-Api-Key'] = apiKey;
-        }
-
-        const body = {
-          input: processedText,
+      const { error, predictions: fetchedPredictions } =
+        await fetchPredictionsApi({
+          text,
+          apiKey,
+          proxyUrl,
+          sessionToken,
           languageCode,
-          ...(sessionToken && { sessionToken }),
-          ...(includedRegionCodes?.length > 0 && { includedRegionCodes }),
-          ...(types.length > 0 && { includedPrimaryTypes: types }),
-        };
-
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(body),
+          includedRegionCodes,
+          types,
+          biasPrefixText,
         });
 
-        const data = await response.json();
-
-        if (data.suggestions) {
-          setPredictions(data.suggestions);
-          setShowSuggestions(true);
-        } else {
-          setPredictions([]);
-        }
-      } catch (error) {
-        console.error('Error fetching predictions:', error);
+      if (error) {
+        onError?.(error);
         setPredictions([]);
-      } finally {
-        setLoading(false);
+      } else {
+        setPredictions(fetchedPredictions);
+        setShowSuggestions(fetchedPredictions.length > 0);
       }
+
+      setLoading(false);
+    };
+
+    const fetchPlaceDetails = async (placeId) => {
+      if (!fetchDetails || !placeId) return null;
+
+      setDetailsLoading(true);
+
+      const { error, details } = await fetchPlaceDetailsApi({
+        placeId,
+        apiKey,
+        detailsProxyUrl,
+        sessionToken,
+        languageCode,
+        detailsFields,
+      });
+
+      setDetailsLoading(false);
+
+      if (error) {
+        onError?.(error);
+        return null;
+      }
+
+      return details;
     };
 
     const handleTextChange = (text) => {
       setInputText(text);
-      onPlaceSelect(null);
       onTextChange?.(text);
 
       if (debounceTimeout.current) {
@@ -159,14 +175,29 @@ const GooglePlacesTextInput = forwardRef(
       }, debounceDelay);
     };
 
-    const handleSuggestionPress = (suggestion) => {
+    const handleSuggestionPress = async (suggestion) => {
       const place = suggestion.placePrediction;
       setInputText(place.structuredFormat.mainText.text);
       setShowSuggestions(false);
       Keyboard.dismiss();
 
-      // Pass both the place and session token to parent
-      onPlaceSelect?.(place, sessionToken);
+      if (fetchDetails) {
+        // Show loading indicator while fetching details
+        setLoading(true);
+
+        // Fetch the place details - Note that placeId is already in the correct format
+        const details = await fetchPlaceDetails(place.placeId);
+
+        // Merge the details with the place data
+        const enrichedPlace = details ? { ...place, details } : place;
+
+        // Pass both the enriched place and session token to parent
+        onPlaceSelect?.(enrichedPlace, sessionToken);
+        setLoading(false);
+      } else {
+        // Original behavior when fetchDetails is false
+        onPlaceSelect?.(place, sessionToken);
+      }
 
       // Generate a new token after a place is selected
       setSessionToken(generateSessionToken());
@@ -305,7 +336,6 @@ const GooglePlacesTextInput = forwardRef(
                 setInputText('');
                 setPredictions([]);
                 setShowSuggestions(false);
-                onPlaceSelect?.(null);
                 onTextChange?.('');
                 setSessionToken(generateSessionToken());
                 inputRef.current?.focus();
@@ -323,7 +353,7 @@ const GooglePlacesTextInput = forwardRef(
           )}
 
           {/* Loading indicator - position adjusts based on showClearButton */}
-          {loading && showLoadingIndicator && (
+          {(loading || detailsLoading) && showLoadingIndicator && (
             <ActivityIndicator
               style={[styles.loadingIndicator, getIconPosition(45)]}
               size={'small'}
@@ -408,25 +438,5 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
 });
-
-const isRTLText = (text) => {
-  if (!text) return false;
-  // Hebrew: \u0590-\u05FF
-  // Arabic: \u0600-\u06FF, \u0750-\u077F (Arabic Supplement), \u0870-\u089F (Arabic Extended-B)
-  // Arabic Presentation Forms: \uFB50-\uFDFF, \uFE70-\uFEFF
-  const rtlRegex =
-    /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u0870-\u089F\uFB50-\uFDFF\uFE70-\uFEFF]/;
-  return rtlRegex.test(text);
-};
-
-// Helper function to generate UUID v4
-const generateUUID = () => {
-  // RFC4122 version 4 compliant UUID
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-};
 
 export default GooglePlacesTextInput;
