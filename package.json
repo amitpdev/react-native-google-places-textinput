@@ -1,6 +1,6 @@
 {
   "name": "react-native-google-places-textinput",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "A customizable React Native TextInput component for Google Places Autocomplete using the Places API (New)",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
