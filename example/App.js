@@ -2,8 +2,9 @@ import { SafeAreaView, StyleSheet, View, Text } from 'react-native';
 import GooglePlacesTextInput from 'react-native-google-places-textinput';
 
 const App = () => {
-  const handleBasicPlaceSelect = (place) => {
+  const handleBasicPlaceSelect = (place, token) => {
     console.log('Basic example selected place:', place);
+    console.log('Session token generated for this session:', token);
   };
 
   const handleStyledPlaceSelect = (place) => {
@@ -28,6 +29,7 @@ const App = () => {
     suggestionsContainer: {
       backgroundColor: '#FFFFFF',
       borderRadius: 12,
+      maxHeight: 300,
       marginTop: 8,
       elevation: 3,
       shadowColor: '#000',
@@ -36,7 +38,8 @@ const App = () => {
       shadowRadius: 8,
     },
     suggestionItem: {
-      padding: 16,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
       borderBottomWidth: 1,
       borderBottomColor: '#F0F0F0',
     },

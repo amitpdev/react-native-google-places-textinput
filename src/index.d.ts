@@ -12,172 +12,175 @@ export interface GooglePlacesTextInputProps extends TextInputProps {
 
   /**
    * Callback that is called when a place is selected
+   * Includes the selected place data and session token
    */
-  onPlaceSelected?: (place: GooglePlaceData) => void;
+  onPlaceSelect: (place: GooglePlaceData | null, sessionToken?: string) => void;
 
   /**
-   * Callback that is called with the fetched prediction data
+   * Callback that is called when text input changes
    */
-  onPredictionsFetched?: (predictions: GooglePrediction[]) => void;
+  onTextChange?: (text: string) => void;
 
   /**
    * Placeholder text for the input
    */
-  placeholder?: string;
+  placeHolderText?: string;
 
   /**
-   * Custom styles for the text input
+   * Custom proxy URL for Google Places API requests
+   * @default 'https://places.googleapis.com/v1/places:autocomplete'
    */
-  textInputStyle?: object;
-
-  /**
-   * Custom styles for the suggestions container
-   */
-  suggestionsContainerStyle?: object;
-
-  /**
-   * Custom styles for each suggestion item
-   */
-  suggestionItemStyle?: object;
-
-  /**
-   * Custom styles for each suggestion item text
-   */
-  suggestionItemTextStyle?: object;
+  proxyUrl?: string;
 
   /**
    * Language code (e.g., 'en', 'fr') for the Google Places API responses
    */
-  language?: string;
+  languageCode?: string;
 
   /**
-   * Country code (e.g., 'us', 'ca') to restrict results to specific countries
+   * Country codes to restrict results to specific countries
    */
-  components?: string;
+  includedRegionCodes?: string[];
 
   /**
    * Types of predictions to return
    */
-  types?: string;
+  types?: string[];
+
+  /**
+   * Function to modify the search text before sending to API
+   */
+  biasPrefixText?: (text: string) => string;
 
   /**
    * Minimum length of text to trigger predictions
+   * @default 1
    */
-  minLength?: number;
-
-  /**
-   * Timeout (in ms) after which the request will be canceled if not completed
-   */
-  fetchTimeout?: number;
-
-  /**
-   * Whether to enable the clear button in the text input
-   */
-  enableClearButton?: boolean;
-
-  /**
-   * Whether to enable powered by Google logo
-   */
-  enablePoweredByGoogle?: boolean;
+  minCharsToFetch?: number;
 
   /**
    * Custom debounce delay in ms for API requests
+   * @default 200
    */
-  debounce?: number;
+  debounceDelay?: number;
 
   /**
-   * Whether to disable suggestions dropdown
+   * Whether to show loading indicator during API requests
+   * @default true
    */
-  disableSuggestions?: boolean;
+  showLoadingIndicator?: boolean;
+
+  /**
+   * Whether to enable the clear button in the text input
+   * @default true
+   */
+  showClearButton?: boolean;
+
+  /**
+   * Force RTL mode regardless of text content
+   */
+  forceRTL?: boolean;
 
   /**
    * Whether to hide suggestions when keyboard is dismissed
    * @default false
    */
   hideOnKeyboardDismiss?: boolean;
+
+  /**
+   * Custom styles for the component
+   */
+  style?: {
+    container?: object;
+    input?: object;
+    suggestionsContainer?: object;
+    suggestionItem?: object;
+    suggestionText?: {
+      main?: object;
+      secondary?: object;
+    };
+    suggestionsList?: object;
+    placeholder?: {
+      color?: string;
+    };
+    loadingIndicator?: {
+      color?: string;
+    };
+  };
 }
 
 export interface GooglePrediction {
-  /**
-   * Place ID from Google Places API
-   */
-  place_id: string;
+  placePrediction: {
+    /**
+     * Place ID from Google Places API
+     */
+    placeId: string;
 
-  /**
-   * Description of the place
-   */
-  description: string;
-
-  /**
-   * Structured formatting for the place
-   */
-  structured_formatting?: {
-    main_text: string;
-    secondary_text?: string;
+    /**
+     * Structured formatting for the place
+     */
+    structuredFormat: {
+      mainText: {
+        text: string;
+      };
+      secondaryText?: {
+        text: string;
+      };
+    };
   };
-
-  /**
-   * Additional place details
-   */
-  [key: string]: any;
 }
 
 export interface GooglePlaceData {
   /**
    * Place ID from Google Places API
    */
-  place_id: string;
+  placeId: string;
 
   /**
-   * Full text description of the place
+   * Structured format of the place
    */
-  description?: string;
-
-  /**
-   * Place details when available
-   */
-  details?: {
-    /**
-     * Formatted address of the place
-     */
-    formatted_address?: string;
-
-    /**
-     * Geometry information including location coordinates
-     */
-    geometry?: {
-      location?: {
-        lat: number;
-        lng: number;
-      };
+  structuredFormat?: {
+    mainText: {
+      text: string;
     };
-
-    /**
-     * Place name
-     */
-    name?: string;
-
-    /**
-     * Additional place details components
-     */
-    address_components?: Array<{
-      long_name: string;
-      short_name: string;
-      types: string[];
-    }>;
-
-    /**
-     * Any other details returned by Google Places API
-     */
-    [key: string]: any;
+    secondaryText?: {
+      text: string;
+    };
   };
+
+  /**
+   * Additional place details when available
+   */
+  [key: string]: any;
 }
 
 /**
  * A React Native component that provides Google Places autocomplete functionality in a text input.
  */
 declare const GooglePlacesTextInput: ForwardRefExoticComponent<
-  GooglePlacesTextInputProps & RefAttributes<any>
+  GooglePlacesTextInputProps & RefAttributes<GooglePlacesTextInputRef>
 >;
+
+/**
+ * Ref interface for GooglePlacesTextInput component
+ */
+export interface GooglePlacesTextInputRef {
+  /**
+   * Clears the input text and suggestions
+   * Also resets the session token
+   */
+  clear: () => void;
+
+  /**
+   * Focuses the input field
+   */
+  focus: () => void;
+
+  /**
+   * Returns the current session token
+   * Can be used to match autocomplete requests with place details requests
+   */
+  getSessionToken: () => string | null;
+}
 
 export default GooglePlacesTextInput;

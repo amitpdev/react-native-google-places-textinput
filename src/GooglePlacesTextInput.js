@@ -48,10 +48,18 @@ const GooglePlacesTextInput = forwardRef(
     const [loading, setLoading] = useState(false);
     const [inputText, setInputText] = useState(value || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [sessionToken, setSessionToken] = useState(null);
     const debounceTimeout = useRef(null);
     const inputRef = useRef(null);
 
+    const generateSessionToken = () => {
+      return generateUUID();
+    };
+
+    // Initialize session token on mount
     useEffect(() => {
+      setSessionToken(generateSessionToken());
+
       return () => {
         if (debounceTimeout.current) {
           clearTimeout(debounceTimeout.current);
@@ -81,10 +89,12 @@ const GooglePlacesTextInput = forwardRef(
         setInputText('');
         setPredictions([]);
         setShowSuggestions(false);
+        setSessionToken(generateSessionToken());
       },
       focus: () => {
         inputRef.current?.focus();
       },
+      getSessionToken: () => sessionToken,
     }));
 
     const fetchPredictions = async (text) => {
@@ -104,15 +114,19 @@ const GooglePlacesTextInput = forwardRef(
         if (apiKey || apiKey !== '') {
           headers['X-Goog-Api-Key'] = apiKey;
         }
+
+        const body = {
+          input: processedText,
+          languageCode,
+          ...(sessionToken && { sessionToken }),
+          ...(includedRegionCodes?.length > 0 && { includedRegionCodes }),
+          ...(types.length > 0 && { includedPrimaryTypes: types }),
+        };
+
         const response = await fetch(API_URL, {
           method: 'POST',
           headers,
-          body: JSON.stringify({
-            input: processedText,
-            languageCode,
-            ...(includedRegionCodes?.length > 0 && { includedRegionCodes }),
-            ...(types.length > 0 && { includedPrimaryTypes: types }),
-          }),
+          body: JSON.stringify(body),
         });
 
         const data = await response.json();
@@ -150,7 +164,12 @@ const GooglePlacesTextInput = forwardRef(
       setInputText(place.structuredFormat.mainText.text);
       setShowSuggestions(false);
       Keyboard.dismiss();
-      onPlaceSelect(place); // Notify parent with selected place
+
+      // Pass both the place and session token to parent
+      onPlaceSelect?.(place, sessionToken);
+
+      // Generate a new token after a place is selected
+      setSessionToken(generateSessionToken());
     };
 
     // Show suggestions on focus if text length > minCharsToFetch
@@ -288,6 +307,7 @@ const GooglePlacesTextInput = forwardRef(
                 setShowSuggestions(false);
                 onPlaceSelect?.(null);
                 onTextChange?.('');
+                setSessionToken(generateSessionToken());
                 inputRef.current?.focus();
               }}
             >
@@ -397,6 +417,16 @@ const isRTLText = (text) => {
   const rtlRegex =
     /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u0870-\u089F\uFB50-\uFDFF\uFE70-\uFEFF]/;
   return rtlRegex.test(text);
+};
+
+// Helper function to generate UUID v4
+const generateUUID = () => {
+  // RFC4122 version 4 compliant UUID
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 };
 
 export default GooglePlacesTextInput;
