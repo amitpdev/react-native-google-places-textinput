@@ -309,6 +309,15 @@ const GooglePlacesTextInput = forwardRef(
       return { end: paddingValue };
     };
 
+    useEffect(() => {
+      if (Platform.OS === 'web' && fetchDetails && !detailsProxyUrl) {
+        console.warn(
+          'Google Places Details API does not support CORS. ' +
+            'To fetch place details on web, provide a detailsProxyUrl prop that points to a CORS-enabled proxy.'
+        );
+      }
+    }, [fetchDetails, detailsProxyUrl]);
+
     return (
       <View style={[styles.container, style.container]}>
         <View>

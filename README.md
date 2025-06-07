@@ -202,7 +202,7 @@ const PlaceDetailsExample = () => {
 | biasPrefixText | string | No | - | Text to prepend to search query |
 | **Place Details Configuration** |
 | fetchDetails | boolean | No | false | Automatically fetch place details when a place is selected |
-| detailsProxyUrl | string | No | null | Custom proxy URL for place details requests |
+| detailsProxyUrl | string | No | null | Custom proxy URL for place details requests (Required on Expo web)|
 | detailsFields | string[] | No | ['displayName', 'formattedAddress', 'location', 'id'] | Array of fields to include in the place details response. see [Valid Fields](https://developers.google.com/maps/documentation/places/web-service/place-details#fieldmask) |
 | **UI Customization** |
 | style | StyleProp | No | {} | Custom styles object |
@@ -234,6 +234,23 @@ When `fetchDetails` is enabled:
 3. Use the `detailsFields` prop to specify which fields to include in the response, reducing API costs
 
 For a complete list of available fields, see the [Place Details API documentation](https://developers.google.com/maps/documentation/places/web-service/place-details#fieldmask).
+
+### Place Details on Expo Web
+
+**Important:** To use Google Places Details on Expo Web, you must provide a `detailsProxyUrl` prop that points to a CORS-enabled proxy for the Google Places Details API. This is required due to browser security restrictions.
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  fetchDetails={true}
+  detailsProxyUrl="https://your-backend-proxy.com/places-details"
+  onPlaceSelect={(place) => console.log(place.details)}
+/>
+```
+
+Without a proxy, the component will still work on Expo Web for place search, but place details fetching will fail with CORS errors.
+
+For a complete guide on setting up a proxy server for Expo Web, see [Expo Web Details Proxy Guide](./docs/expo-web-details-proxy.md).
 
 ## Session Tokens and Billing
 

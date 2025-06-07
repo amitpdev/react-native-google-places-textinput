@@ -73,7 +73,9 @@ export const fetchPlaceDetails = async ({
   }
 
   try {
-    const API_URL = detailsProxyUrl || `${DEFAULT_PLACE_DETAILS_URL}${placeId}`;
+    const API_URL = detailsProxyUrl
+      ? `${detailsProxyUrl}/${placeId}`
+      : `${DEFAULT_PLACE_DETAILS_URL}${placeId}`;
     const headers = {
       'Content-Type': 'application/json',
     };
