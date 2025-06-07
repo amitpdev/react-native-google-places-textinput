@@ -61,6 +61,7 @@ const GooglePlacesTextInput = forwardRef(
     const [detailsLoading, setDetailsLoading] = useState(false);
     const debounceTimeout = useRef(null);
     const inputRef = useRef(null);
+    const suggestionPressing = useRef(false);
 
     const generateSessionToken = () => {
       return generateUUID();
@@ -229,7 +230,22 @@ const GooglePlacesTextInput = forwardRef(
             },
             style.suggestionItem,
           ]}
-          onPress={() => handleSuggestionPress(item)}
+          onPress={() => {
+            suggestionPressing.current = false;
+            handleSuggestionPress(item);
+          }}
+          // Fix for web: onBlur fires before onPress, hiding suggestions too early.
+          // We use suggestionPressing.current to delay hiding until selection is handled.
+          onMouseDown={() => {
+            if (Platform.OS === 'web') {
+              suggestionPressing.current = true;
+            }
+          }}
+          onTouchStart={() => {
+            if (Platform.OS === 'web') {
+              suggestionPressing.current = true;
+            }
+          }}
         >
           <Text
             style={[
@@ -324,7 +340,15 @@ const GooglePlacesTextInput = forwardRef(
             value={inputText}
             onChangeText={handleTextChange}
             onFocus={handleFocus}
-            onBlur={() => setShowSuggestions(false)}
+            onBlur={() => {
+              setTimeout(() => {
+                if (suggestionPressing.current) {
+                  suggestionPressing.current = false;
+                } else {
+                  setShowSuggestions(false);
+                }
+              }, 10);
+            }}
             clearButtonMode="never" // Disable iOS native clear button
           />
 
