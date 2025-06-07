@@ -89,6 +89,55 @@ const App = () => {
           types={['restaurant', 'cafe']}
         />
       </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Place Details Example</Text>
+        <GooglePlacesTextInput
+          apiKey="YOUR_API_KEY_HERE"
+          placeHolderText="Search with full details"
+          onPlaceSelect={(place) => {
+            console.log('Place with details:', place);
+            if (place?.details) {
+              console.log(
+                'Address components:',
+                place.details.addressComponents
+              );
+              console.log('Formatted address:', place.details.formattedAddress);
+              console.log('Location:', place.details.location);
+              console.log('Has photos:', place.details.photos?.length > 0);
+            }
+          }}
+          onError={(error) => console.error('Places API error:', error)}
+          fetchDetails={true}
+          detailsFields={[
+            'addressComponents',
+            'formattedAddress',
+            'location',
+            'viewport',
+            'photos',
+            'types',
+          ]}
+          style={{
+            container: {
+              width: '100%',
+              paddingHorizontal: 16,
+            },
+            input: {
+              height: 50,
+              borderWidth: 1.5,
+              borderColor: '#7986CB',
+              borderRadius: 12,
+              paddingHorizontal: 16,
+              fontSize: 16,
+              backgroundColor: '#F5F7FF',
+            },
+            suggestionsContainer: {
+              borderRadius: 12,
+              maxHeight: 300,
+            },
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 };

@@ -50,15 +50,13 @@
     "android",
     "autocomplete",
     "geolocation",
-    "google",
-    "google-places-api",
+    "google-places",
     "ios",
-    "place-autocomplete",
+    "places-autocomplete",
     "places",
     "react-native",
-    "react-native-component",
-    "search",
-    "textinput"
+    "textinput",
+    "expo"
   ],
   "repository": {
     "type": "git",

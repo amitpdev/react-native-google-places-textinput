@@ -15,6 +15,8 @@ A customizable React Native TextInput component for Google Places Autocomplete u
 - TypeScript support
 - Session token support for reduced billing costs
 - Extended place details fetching (Optional)
+- Compatible with both Expo and non-Expo projects
+- Works with Expo Web
 
 ## Preview
 
@@ -31,6 +33,8 @@ npm install react-native-google-places-textinput
 # or
 yarn add react-native-google-places-textinput
 ```
+
+> **Note:** This package works seamlessly with both Expo and non-Expo React Native projects with no additional configuration required.
 
 ## Prerequisites
 
@@ -53,28 +57,17 @@ const YourComponent = () => {
     console.log('Selected place:', place);
   };
 
-  const basicStyles = {
-    container: {
-      width: '100%',  // Ensure full width
-      paddingHorizontal: 16,
-    },
-    input: {
-      height: 40,  // Comfortable touch target
-    }
-  };
-
   return (
     <GooglePlacesTextInput
       apiKey="YOUR_GOOGLE_PLACES_API_KEY"
       onPlaceSelect={handlePlaceSelect}
-      style={basicStyles}
     />
   );
 };
 ```
 
 <details>
-<summary>Example with Places API Configuration</summary>
+<summary>Example with language and region codes filtering</summary>
 
 ```javascript
 const ConfiguredExample = () => {
@@ -97,7 +90,7 @@ const ConfiguredExample = () => {
 </details>
 
 <details>
-<summary>Example with Full Styling</summary>
+<summary>Example with full styling</summary>
 
 ```javascript
 const StyledExample = () => {
@@ -153,41 +146,7 @@ const StyledExample = () => {
 </details>
 
 <details>
-<summary>Example Using Session Token</summary>
-
-```javascript
-import { useRef } from 'react';
-
-const SessionTokenExample = () => {
-  const inputRef = useRef(null);
-  
-  const handlePlaceSelect = (place, sessionToken) => {
-    console.log('Selected place:', place);
-    console.log('Session token used:', sessionToken);
-    
-    // You can now use this same sessionToken when fetching place details
-    // to benefit from reduced billing (session matching)
-    fetchPlaceDetails(place.placeId, sessionToken);
-  };
-  
-  const fetchPlaceDetails = async (placeId, sessionToken) => {
-    // Your code to fetch place details using the same sessionToken
-    // ...
-  };
-
-  return (
-    <GooglePlacesTextInput
-      ref={inputRef}
-      apiKey="YOUR_GOOGLE_PLACES_API_KEY"
-      onPlaceSelect={handlePlaceSelect}
-    />
-  );
-};
-```
-</details>
-
-<details>
-<summary>Example with Place Details Fetching</summary>
+<summary>Example with place details fetching</summary>
 
 ```javascript
 const PlaceDetailsExample = () => {
@@ -196,10 +155,7 @@ const PlaceDetailsExample = () => {
     
     // Access detailed place information 
     if (place.details) {
-      console.log('Address components:', place.details.addressComponents);
-      console.log('Geometry:', place.details.geometry);
-      console.log('Photos:', place.details.photos);
-      // And other fields you requested
+      console.log(place.details);
     }
   };
 
@@ -214,12 +170,11 @@ const PlaceDetailsExample = () => {
       onError={handleError}
       fetchDetails={true}
       detailsFields={[
-        'address_components',
-        'formatted_address',
-        'geometry',
+        'addressComponents',
+        'formattedAddress',
+        'location',
         'viewport',
         'photos',
-        'place_id',
         'types'
       ]}
     />
@@ -248,7 +203,7 @@ const PlaceDetailsExample = () => {
 | **Place Details Configuration** |
 | fetchDetails | boolean | No | false | Automatically fetch place details when a place is selected |
 | detailsProxyUrl | string | No | null | Custom proxy URL for place details requests |
-| detailsFields | string[] | No | [] | Array of fields to include in the place details response |
+| detailsFields | string[] | No | ['displayName', 'formattedAddress', 'location', 'id'] | Array of fields to include in the place details response. see [Valid Fields](https://developers.google.com/maps/documentation/places/web-service/place-details#fieldmask) |
 | **UI Customization** |
 | style | StyleProp | No | {} | Custom styles object |
 | showLoadingIndicator | boolean | No | true | Show/hide loading indicator |
@@ -268,7 +223,7 @@ You can automatically fetch detailed place information when a user selects a pla
 <GooglePlacesTextInput
   apiKey="YOUR_GOOGLE_PLACES_API_KEY"
   fetchDetails={true}
-  detailsFields={['formatted_address', 'geometry', 'viewport', 'photos']}
+  detailsFields={['formattedAddress', 'location', 'viewport', 'photos']}
   onPlaceSelect={(place) => console.log(place.details)}
 />
 ```
