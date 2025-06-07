@@ -2,6 +2,36 @@ const DEFAULT_GOOGLE_API_URL =
   'https://places.googleapis.com/v1/places:autocomplete';
 const DEFAULT_PLACE_DETAILS_URL = 'https://places.googleapis.com/v1/places/';
 
+interface FetchPredictionsParams {
+  text: string;
+  apiKey?: string;
+  proxyUrl?: string;
+  sessionToken?: string | null;
+  languageCode?: string;
+  includedRegionCodes?: string[];
+  types?: string[];
+  biasPrefixText?: (text: string) => string;
+}
+
+interface FetchPlaceDetailsParams {
+  placeId: string;
+  apiKey?: string;
+  detailsProxyUrl?: string | null;
+  sessionToken?: string | null;
+  languageCode?: string;
+  detailsFields?: string[];
+}
+
+interface PredictionResult {
+  error: Error | null;
+  predictions: any[];
+}
+
+interface PlaceDetailsResult {
+  error: Error | null;
+  details: any;
+}
+
 /**
  * Fetches place predictions from Google Places API
  */
@@ -14,7 +44,7 @@ export const fetchPredictions = async ({
   includedRegionCodes,
   types = [],
   biasPrefixText,
-}) => {
+}: FetchPredictionsParams): Promise<PredictionResult> => {
   if (!text) {
     return { error: null, predictions: [] };
   }
@@ -23,9 +53,10 @@ export const fetchPredictions = async ({
 
   try {
     const API_URL = proxyUrl || DEFAULT_GOOGLE_API_URL;
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
+
     if (apiKey) {
       headers['X-Goog-Api-Key'] = apiKey;
     }
@@ -34,7 +65,8 @@ export const fetchPredictions = async ({
       input: processedText,
       languageCode,
       ...(sessionToken && { sessionToken }),
-      ...(includedRegionCodes?.length > 0 && { includedRegionCodes }),
+      ...(includedRegionCodes &&
+        includedRegionCodes.length > 0 && { includedRegionCodes }),
       ...(types.length > 0 && { includedPrimaryTypes: types }),
     };
 
@@ -53,7 +85,7 @@ export const fetchPredictions = async ({
     return { error: null, predictions: data.suggestions || [] };
   } catch (error) {
     console.error('Error fetching predictions:', error);
-    return { error, predictions: [] };
+    return { error: error as Error, predictions: [] };
   }
 };
 
@@ -67,7 +99,7 @@ export const fetchPlaceDetails = async ({
   sessionToken,
   languageCode,
   detailsFields = [],
-}) => {
+}: FetchPlaceDetailsParams): Promise<PlaceDetailsResult> => {
   if (!placeId) {
     return { error: null, details: null };
   }
@@ -76,7 +108,8 @@ export const fetchPlaceDetails = async ({
     const API_URL = detailsProxyUrl
       ? `${detailsProxyUrl}/${placeId}`
       : `${DEFAULT_PLACE_DETAILS_URL}${placeId}`;
-    const headers = {
+
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 
@@ -120,26 +153,26 @@ export const fetchPlaceDetails = async ({
     return { error: null, details: data };
   } catch (error) {
     console.error('Error fetching place details:', error);
-    return { error, details: null };
+    return { error: error as Error, details: null };
   }
 };
 
-// Helper function to generate UUID v4
-export const generateUUID = () => {
-  // RFC4122 version 4 compliant UUID
+/**
+ * Helper function to generate UUID v4
+ */
+export const generateUUID = (): string => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 };
 
-// RTL detection logic
-export const isRTLText = (text) => {
+/**
+ * RTL detection logic
+ */
+export const isRTLText = (text: string): boolean => {
   if (!text) return false;
-  // Hebrew: \u0590-\u05FF
-  // Arabic: \u0600-\u06FF, \u0750-\u077F (Arabic Supplement), \u0870-\u089F (Arabic Extended-B)
-  // Arabic Presentation Forms: \uFB50-\uFDFF, \uFE70-\uFEFF
   const rtlRegex =
     /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u0870-\u089F\uFB50-\uFDFF\uFE70-\uFEFF]/;
   return rtlRegex.test(text);

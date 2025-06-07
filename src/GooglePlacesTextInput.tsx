@@ -1,10 +1,11 @@
-import React, {
+import {
   forwardRef,
   useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from 'react';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import {
   ActivityIndicator,
   FlatList,
@@ -26,7 +27,89 @@ import {
   isRTLText,
 } from './services/googlePlacesApi';
 
-const GooglePlacesTextInput = forwardRef(
+// Type definitions
+interface PlaceStructuredFormat {
+  mainText: {
+    text: string;
+  };
+  secondaryText?: {
+    text: string;
+  };
+}
+
+interface PlacePrediction {
+  placeId: string;
+  structuredFormat: PlaceStructuredFormat;
+  types: string[];
+}
+
+interface PlaceDetailsFields {
+  [key: string]: any;
+}
+
+interface Place {
+  placeId: string;
+  structuredFormat: PlaceStructuredFormat;
+  types: string[];
+  details?: PlaceDetailsFields; // ✅ Optional details when fetchDetails is true
+}
+
+interface GooglePlacesTextInputStyles {
+  container?: StyleProp<ViewStyle>;
+  input?: StyleProp<TextStyle>;
+  suggestionsContainer?: StyleProp<ViewStyle>;
+  suggestionsList?: StyleProp<ViewStyle>;
+  suggestionItem?: StyleProp<ViewStyle>;
+  suggestionText?: {
+    main?: StyleProp<TextStyle>;
+    secondary?: StyleProp<TextStyle>;
+  };
+  loadingIndicator?: {
+    color?: string; // ✅ Keep as string, not StyleProp
+  };
+  placeholder?: {
+    color?: string; // ✅ Keep as string, not StyleProp
+  };
+}
+
+interface GooglePlacesTextInputProps {
+  apiKey: string;
+  value?: string;
+  placeHolderText?: string;
+  proxyUrl?: string;
+  languageCode?: string;
+  includedRegionCodes?: string[];
+  types?: string[];
+  biasPrefixText?: (text: string) => string; // ✅ Function that transforms text
+  minCharsToFetch?: number;
+  onPlaceSelect: (place: Place, sessionToken?: string | null) => void; // ✅ Remove | null
+  onTextChange?: (text: string) => void;
+  debounceDelay?: number;
+  showLoadingIndicator?: boolean;
+  showClearButton?: boolean;
+  forceRTL?: boolean;
+  style?: GooglePlacesTextInputStyles;
+  hideOnKeyboardDismiss?: boolean;
+  fetchDetails?: boolean;
+  detailsProxyUrl?: string | null; // ✅ Add | null to match JS
+  detailsFields?: string[];
+  onError?: (error: any) => void;
+}
+
+interface GooglePlacesTextInputRef {
+  clear: () => void;
+  focus: () => void;
+  getSessionToken: () => string | null;
+}
+
+interface PredictionItem {
+  placePrediction: PlacePrediction;
+}
+
+const GooglePlacesTextInput = forwardRef<
+  GooglePlacesTextInputRef,
+  GooglePlacesTextInputProps
+>(
   (
     {
       apiKey,
@@ -53,18 +136,18 @@ const GooglePlacesTextInput = forwardRef(
     },
     ref
   ) => {
-    const [predictions, setPredictions] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [inputText, setInputText] = useState(value || '');
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const [sessionToken, setSessionToken] = useState(null);
-    const [detailsLoading, setDetailsLoading] = useState(false);
-    const debounceTimeout = useRef(null);
-    const inputRef = useRef(null);
-    const suggestionPressing = useRef(false);
-    const skipNextFocusFetch = useRef(false);
+    const [predictions, setPredictions] = useState<PredictionItem[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [inputText, setInputText] = useState<string>(value || '');
+    const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+    const [sessionToken, setSessionToken] = useState<string | null>(null);
+    const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
+    const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const inputRef = useRef<TextInput>(null);
+    const suggestionPressing = useRef<boolean>(false);
+    const skipNextFocusFetch = useRef<boolean>(false);
 
-    const generateSessionToken = () => {
+    const generateSessionToken = (): string => {
       return generateUUID();
     };
 
@@ -91,7 +174,6 @@ const GooglePlacesTextInput = forwardRef(
           keyboardDidHideSubscription.remove();
         };
       }
-      // Return empty cleanup function if not using the listener
       return () => {};
     }, [hideOnKeyboardDismiss]);
 
@@ -113,7 +195,21 @@ const GooglePlacesTextInput = forwardRef(
       getSessionToken: () => sessionToken,
     }));
 
-    const fetchPredictions = async (text) => {
+    // RTL detection logic
+    const isRTL =
+      forceRTL !== undefined ? forceRTL : isRTLText(placeHolderText ?? '');
+
+    // Add missing CORS warning effect
+    useEffect(() => {
+      if (Platform.OS === 'web' && fetchDetails && !detailsProxyUrl) {
+        console.warn(
+          'Google Places Details API does not support CORS. ' +
+            'To fetch place details on web, provide a detailsProxyUrl prop that points to a CORS-enabled proxy.'
+        );
+      }
+    }, [fetchDetails, detailsProxyUrl]);
+
+    const fetchPredictions = async (text: string): Promise<void> => {
       if (!text || text.length < minCharsToFetch) {
         setPredictions([]);
         return;
@@ -144,7 +240,9 @@ const GooglePlacesTextInput = forwardRef(
       setLoading(false);
     };
 
-    const fetchPlaceDetails = async (placeId) => {
+    const fetchPlaceDetails = async (
+      placeId: string
+    ): Promise<PlaceDetailsFields | null> => {
       if (!fetchDetails || !placeId) return null;
 
       setDetailsLoading(true);
@@ -168,7 +266,7 @@ const GooglePlacesTextInput = forwardRef(
       return details;
     };
 
-    const handleTextChange = (text) => {
+    const handleTextChange = (text: string): void => {
       setInputText(text);
       onTextChange?.(text);
 
@@ -181,31 +279,27 @@ const GooglePlacesTextInput = forwardRef(
       }, debounceDelay);
     };
 
-    const handleSuggestionPress = async (suggestion) => {
+    const handleSuggestionPress = async (
+      suggestion: PredictionItem
+    ): Promise<void> => {
       const place = suggestion.placePrediction;
       setInputText(place.structuredFormat.mainText.text);
       setShowSuggestions(false);
       Keyboard.dismiss();
 
       if (fetchDetails) {
-        // Show loading indicator while fetching details
         setLoading(true);
-        // Fetch the place details - Note that placeId is already in the correct format
         const details = await fetchPlaceDetails(place.placeId);
-        // Merge the details with the place data
-        const enrichedPlace = details ? { ...place, details } : place;
-        // Pass both the enriched place and session token to parent
+        const enrichedPlace: Place = details ? { ...place, details } : place;
         onPlaceSelect?.(enrichedPlace, sessionToken);
         setLoading(false);
       } else {
-        // Original behavior when fetchDetails is false
         onPlaceSelect?.(place, sessionToken);
       }
-      // Generate a new token after a place is selected
       setSessionToken(generateSessionToken());
     };
 
-    const handleFocus = () => {
+    const handleFocus = (): void => {
       if (skipNextFocusFetch.current) {
         skipNextFocusFetch.current = false;
         return;
@@ -216,22 +310,21 @@ const GooglePlacesTextInput = forwardRef(
       }
     };
 
-    // RTL detection logic
-    const isRTL =
-      forceRTL !== undefined ? forceRTL : isRTLText(placeHolderText);
-
-    const renderSuggestion = ({ item }) => {
+    const renderSuggestion = ({ item }: { item: PredictionItem }) => {
       const { mainText, secondaryText } = item.placePrediction.structuredFormat;
+
+      // Safely extract backgroundColor from style
+      const suggestionsContainerStyle = StyleSheet.flatten(
+        style.suggestionsContainer
+      );
+      const backgroundColor =
+        suggestionsContainerStyle?.backgroundColor || '#efeff1';
 
       return (
         <TouchableOpacity
           style={[
             styles.suggestionItem,
-            // Inherit background color from container if not specified
-            {
-              backgroundColor:
-                style.suggestionsContainer?.backgroundColor || '#efeff1',
-            },
+            { backgroundColor },
             style.suggestionItem,
           ]}
           onPress={() => {
@@ -239,17 +332,12 @@ const GooglePlacesTextInput = forwardRef(
             handleSuggestionPress(item);
           }}
           // Fix for web: onBlur fires before onPress, hiding suggestions too early.
-          // We use suggestionPressing.current to delay hiding until selection is handled.
-          onMouseDown={() => {
-            if (Platform.OS === 'web') {
-              suggestionPressing.current = true;
-            }
-          }}
-          onTouchStart={() => {
-            if (Platform.OS === 'web') {
-              suggestionPressing.current = true;
-            }
-          }}
+          {...(Platform.OS === 'web' &&
+            ({
+              onMouseDown: () => {
+                suggestionPressing.current = true;
+              },
+            } as any))}
         >
           <Text
             style={[
@@ -293,30 +381,19 @@ const GooglePlacesTextInput = forwardRef(
     const getTextAlign = () => {
       const isDeviceRTL = I18nManager.isRTL;
       if (isDeviceRTL) {
-        // Device is RTL, so "left" and "right" are swapped
-        return { textAlign: isRTL ? 'left' : 'right' };
+        return { textAlign: isRTL ? 'left' : ('right' as 'left' | 'right') };
       } else {
-        // Device is LTR, normal behavior
-        return { textAlign: isRTL ? 'right' : 'left' };
+        return { textAlign: isRTL ? 'right' : ('left' as 'left' | 'right') };
       }
     };
 
-    const getIconPosition = (paddingValue) => {
+    const getIconPosition = (paddingValue: number) => {
       const physicalRTL = I18nManager.isRTL;
       if (isRTL !== physicalRTL) {
         return { start: paddingValue };
       }
       return { end: paddingValue };
     };
-
-    useEffect(() => {
-      if (Platform.OS === 'web' && fetchDetails && !detailsProxyUrl) {
-        console.warn(
-          'Google Places Details API does not support CORS. ' +
-            'To fetch place details on web, provide a detailsProxyUrl prop that points to a CORS-enabled proxy.'
-        );
-      }
-    }, [fetchDetails, detailsProxyUrl]);
 
     return (
       <View style={[styles.container, style.container]}>
@@ -383,6 +460,7 @@ const GooglePlacesTextInput = forwardRef(
             />
           )}
         </View>
+
         {/* Suggestions */}
         {showSuggestions && predictions.length > 0 && (
           <View
@@ -476,5 +554,15 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
 });
+
+export type {
+  GooglePlacesTextInputProps,
+  GooglePlacesTextInputRef,
+  GooglePlacesTextInputStyles,
+  Place,
+  PlaceDetailsFields,
+  PlacePrediction,
+  PlaceStructuredFormat,
+};
 
 export default GooglePlacesTextInput;

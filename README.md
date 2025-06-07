@@ -12,7 +12,6 @@ A customizable React Native TextInput component for Google Places Autocomplete u
 - Custom place types filtering
 - RTL support
 - Multi-language support
-- TypeScript support
 - Session token support for reduced billing costs
 - Extended place details fetching (Optional)
 - Compatible with both Expo and non-Expo projects
@@ -34,7 +33,7 @@ npm install react-native-google-places-textinput
 yarn add react-native-google-places-textinput
 ```
 
-> **Note:** This package works seamlessly with both Expo and non-Expo React Native projects with no additional configuration required.
+> **Note:** This package is written in TypeScript and works seamlessly with both Expo and non-Expo React Native projects with no additional configuration required.
 
 ## Prerequisites
 
@@ -199,7 +198,7 @@ const PlaceDetailsExample = () => {
 | languageCode | string | No | - | Language code (e.g., 'en', 'fr') |
 | includedRegionCodes | string[] | No | - | Array of region codes to filter results |
 | types | string[] | No | [] | Array of place types to filter |
-| biasPrefixText | string | No | - | Text to prepend to search query |
+| biasPrefixText | (text: string) => string | No | - | Optional function to modify the input text before sending to the Places API |
 | **Place Details Configuration** |
 | fetchDetails | boolean | No | false | Automatically fetch place details when a place is selected |
 | detailsProxyUrl | string | No | null | Custom proxy URL for place details requests (Required on Expo web)|
