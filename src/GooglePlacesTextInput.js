@@ -1,27 +1,27 @@
 import React, {
-  useState,
-  useRef,
-  useEffect,
   forwardRef,
+  useEffect,
   useImperativeHandle,
+  useRef,
+  useState,
 } from 'react';
 import {
-  View,
-  TextInput,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
-  Keyboard,
+  FlatList,
   I18nManager,
+  Keyboard,
   Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // Import the API functions
 import {
-  fetchPredictions as fetchPredictionsApi,
   fetchPlaceDetails as fetchPlaceDetailsApi,
+  fetchPredictions as fetchPredictionsApi,
   generateUUID,
   isRTLText,
 } from './services/googlePlacesApi';
@@ -62,6 +62,7 @@ const GooglePlacesTextInput = forwardRef(
     const debounceTimeout = useRef(null);
     const inputRef = useRef(null);
     const suggestionPressing = useRef(false);
+    const skipNextFocusFetch = useRef(false);
 
     const generateSessionToken = () => {
       return generateUUID();
@@ -97,6 +98,10 @@ const GooglePlacesTextInput = forwardRef(
     // Expose methods to parent through ref
     useImperativeHandle(ref, () => ({
       clear: () => {
+        if (debounceTimeout.current) {
+          clearTimeout(debounceTimeout.current);
+        }
+        skipNextFocusFetch.current = true;
         setInputText('');
         setPredictions([]);
         setShowSuggestions(false);
@@ -185,13 +190,10 @@ const GooglePlacesTextInput = forwardRef(
       if (fetchDetails) {
         // Show loading indicator while fetching details
         setLoading(true);
-
         // Fetch the place details - Note that placeId is already in the correct format
         const details = await fetchPlaceDetails(place.placeId);
-
         // Merge the details with the place data
         const enrichedPlace = details ? { ...place, details } : place;
-
         // Pass both the enriched place and session token to parent
         onPlaceSelect?.(enrichedPlace, sessionToken);
         setLoading(false);
@@ -199,13 +201,15 @@ const GooglePlacesTextInput = forwardRef(
         // Original behavior when fetchDetails is false
         onPlaceSelect?.(place, sessionToken);
       }
-
       // Generate a new token after a place is selected
       setSessionToken(generateSessionToken());
     };
 
-    // Show suggestions on focus if text length > minCharsToFetch
     const handleFocus = () => {
+      if (skipNextFocusFetch.current) {
+        skipNextFocusFetch.current = false;
+        return;
+      }
       if (inputText.length >= minCharsToFetch) {
         fetchPredictions(inputText);
         setShowSuggestions(true);
@@ -268,25 +272,6 @@ const GooglePlacesTextInput = forwardRef(
             </Text>
           )}
         </TouchableOpacity>
-      );
-    };
-
-    const renderSuggestions = () => {
-      if (!showSuggestions || predictions.length === 0) return null;
-
-      return (
-        <View style={[styles.suggestionsContainer, style.suggestionsContainer]}>
-          <FlatList
-            data={predictions}
-            renderItem={renderSuggestion}
-            keyExtractor={(item) => item.placePrediction.placeId}
-            keyboardShouldPersistTaps="always"
-            style={style.suggestionsList}
-            scrollEnabled={true}
-            bounces={false}
-            nestedScrollEnabled={true}
-          />
-        </View>
       );
     };
 
@@ -357,6 +342,10 @@ const GooglePlacesTextInput = forwardRef(
             <TouchableOpacity
               style={[styles.clearButton, getIconPosition(12)]}
               onPress={() => {
+                if (debounceTimeout.current) {
+                  clearTimeout(debounceTimeout.current);
+                }
+                skipNextFocusFetch.current = true;
                 setInputText('');
                 setPredictions([]);
                 setShowSuggestions(false);
@@ -376,7 +365,7 @@ const GooglePlacesTextInput = forwardRef(
             </TouchableOpacity>
           )}
 
-          {/* Loading indicator - position adjusts based on showClearButton */}
+          {/* Loading indicator */}
           {(loading || detailsLoading) && showLoadingIndicator && (
             <ActivityIndicator
               style={[styles.loadingIndicator, getIconPosition(45)]}
@@ -385,7 +374,23 @@ const GooglePlacesTextInput = forwardRef(
             />
           )}
         </View>
-        {renderSuggestions()}
+        {/* Suggestions */}
+        {showSuggestions && predictions.length > 0 && (
+          <View
+            style={[styles.suggestionsContainer, style.suggestionsContainer]}
+          >
+            <FlatList
+              data={predictions}
+              renderItem={renderSuggestion}
+              keyExtractor={(item) => item.placePrediction.placeId}
+              keyboardShouldPersistTaps="always"
+              style={style.suggestionsList}
+              scrollEnabled
+              bounces={false}
+              nestedScrollEnabled
+            />
+          </View>
+        )}
       </View>
     );
   }
