@@ -302,6 +302,8 @@ type Styles = {
 }
 ```
 
+For detailed styling examples and a complete guide, see our [Styling Guide](./docs/styling-guide.md).
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
