@@ -1,24 +1,40 @@
-name: 🐛 Bug report
+name: Bug report
 description: Report a reproducible bug or regression in this library.
 labels: [bug]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        # Bug report
-
-        👋 Hi!
-
-        **Please fill the following carefully before opening a new issue ❗**
   - type: checkboxes
     attributes:
-      label: Before submitting a new issue
-      description: Please perform simple checks first.
+      label: Before submitting
       options:
-        - label: I tested using the latest version of the library, as the bug might be already fixed.
+        - label: I tested using the latest version
           required: true
-        - label: I checked for possible duplicate issues, with possible answers.
+        - label: I checked for duplicate issues
           required: true
+        - label: I have enabled `enableDebug={true}` prop and included console logs below
+          required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options:
+        - iOS
+        - Android
+        - Web (Expo)
+        - Web (RN Web)
+    validations:
+      required: true
+
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: |
+        Run: `npm ls react-native react react-native-google-places-textinput` and paste the result here
+    validations:
+      required: true
+
   - type: textarea
     id: summary
     attributes:
@@ -28,11 +44,11 @@ body:
         If needed, you can also provide other samples: error messages / stack traces, screenshots, gifs, etc.
     validations:
       required: true
+
   - type: textarea
-    id: react-native-info
+    id: debug-logs
     attributes:
-      label: Environment info
-      description: Run `react-native info` in your terminal and paste the results here.
-    validations:
-      required: true
+      label: Debug logs (with enableDebug={true})
+      description: Console logs starting with `[GooglePlacesTextInput:...]`
+      render: text
 
