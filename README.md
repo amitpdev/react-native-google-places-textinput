@@ -186,33 +186,33 @@ const PlaceDetailsExample = () => {
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| **Essential Props** |
+| **Basic Configuration** |
 | apiKey | string | Yes | - | Your Google Places API key |
-| **Input Configuration** |
-| value | string | No | '' | Initial input value |
-| placeHolderText | string | No | - | Placeholder text for input |
-| minCharsToFetch | number | No | 1 | Minimum characters before fetching |
-| debounceDelay | number | No | 200 | Delay before triggering search |
-| **Places API Configuration** |
-| proxyUrl | string | No | - | Custom proxy URL for Places API requests |
+| value | string | No | - | Controlled input value |
+| placeHolderText | string | No | - | Placeholder text for the input |
+| onPlaceSelect | (place: Place, sessionToken?: string) => void | Yes | - | Callback when a place is selected |
+| onTextChange | (text: string) => void | No | - | Callback when input text changes |
+| **Search Configuration** |
+| proxyUrl | string | No | - | Custom proxy URL for API requests (Required for Expo web) |
 | languageCode | string | No | - | Language code (e.g., 'en', 'fr') |
 | includedRegionCodes | string[] | No | - | Array of region codes to filter results |
 | types | string[] | No | [] | Array of place types to filter |
 | biasPrefixText | (text: string) => string | No | - | Optional function to modify the input text before sending to the Places API |
+| minCharsToFetch | number | No | 1 | Minimum characters before triggering search |
+| debounceDelay | number | No | 200 | Delay in milliseconds before triggering search |
 | **Place Details Configuration** |
 | fetchDetails | boolean | No | false | Automatically fetch place details when a place is selected |
 | detailsProxyUrl | string | No | null | Custom proxy URL for place details requests (Required on Expo web)|
 | detailsFields | string[] | No | ['displayName', 'formattedAddress', 'location', 'id'] | Array of fields to include in the place details response. see [Valid Fields](https://developers.google.com/maps/documentation/places/web-service/place-details#fieldmask) |
 | **UI Customization** |
-| style | StyleProp | No | {} | Custom styles object |
-| showLoadingIndicator | boolean | No | true | Show/hide loading indicator |
-| showClearButton | boolean | No | true | Show/hide the input clear button |
-| forceRTL | boolean | No | undefined | Force RTL layout direction |
-hideOnKeyboardDismiss | boolean | No | false | Hide suggestions when keyboard is dismissed
-| **Event Handlers** |
-| onPlaceSelect | (place: Place \| null, sessionToken?: string) => void | Yes | - | Callback when place is selected |
-| onTextChange | (text: string) => void | No | - | Callback triggered on text input changes |
-| onError | (error: any) => void | No | - | Callback for handling API errors |
+| showLoadingIndicator | boolean | No | true | Show loading spinner during API requests |
+| showClearButton | boolean | No | true | Show clear (×) button when input has text |
+| forceRTL | boolean | No | - | Force RTL layout (auto-detected if not provided) |
+| style | GooglePlacesTextInputStyles | No | {} | Custom styling object |
+| hideOnKeyboardDismiss | boolean | No | false | Hide suggestions when keyboard is dismissed |
+| **Error Handling & Debugging** |
+| onError | (error: any) => void | No | - | Callback when API errors occur |
+| enableDebug | boolean | No | false | Enable detailed console logging for troubleshooting |
 
 ## Place Details Fetching
 

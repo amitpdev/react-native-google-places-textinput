@@ -94,6 +94,7 @@ interface GooglePlacesTextInputProps {
   detailsProxyUrl?: string | null; // ✅ Add | null to match JS
   detailsFields?: string[];
   onError?: (error: any) => void;
+  enableDebug?: boolean; // ✅ Add debug prop
 }
 
 interface GooglePlacesTextInputRef {
@@ -133,6 +134,7 @@ const GooglePlacesTextInput = forwardRef<
       detailsProxyUrl = null,
       detailsFields = [],
       onError,
+      enableDebug = false,
     },
     ref
   ) => {
@@ -209,8 +211,37 @@ const GooglePlacesTextInput = forwardRef<
       }
     }, [fetchDetails, detailsProxyUrl]);
 
+    // Debug logger utility
+    const debugLog = (category: string, message: string, data?: any) => {
+      if (enableDebug) {
+        const timestamp = new Date().toISOString();
+        console.log(
+          `[GooglePlacesTextInput:${category}] ${timestamp} - ${message}`
+        );
+        if (data) {
+          console.log(`[GooglePlacesTextInput:${category}] Data:`, data);
+        }
+      }
+    };
+
     const fetchPredictions = async (text: string): Promise<void> => {
+      debugLog('PREDICTIONS', `Starting fetch for text: "${text}"`);
+      debugLog('PREDICTIONS', 'Request params', {
+        text,
+        apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
+        proxyUrl,
+        sessionToken,
+        languageCode,
+        includedRegionCodes,
+        types,
+        minCharsToFetch,
+      });
+
       if (!text || text.length < minCharsToFetch) {
+        debugLog(
+          'PREDICTIONS',
+          `Text too short (${text.length} < ${minCharsToFetch})`
+        );
         setPredictions([]);
         return;
       }
@@ -230,9 +261,19 @@ const GooglePlacesTextInput = forwardRef<
         });
 
       if (error) {
+        debugLog('PREDICTIONS', 'API Error occurred', {
+          errorType: error.constructor.name,
+          errorMessage: error.message,
+          errorStack: error.stack,
+        });
         onError?.(error);
         setPredictions([]);
       } else {
+        debugLog(
+          'PREDICTIONS',
+          `Success: ${fetchedPredictions.length} predictions received`
+        );
+        debugLog('PREDICTIONS', 'Predictions data', fetchedPredictions);
         setPredictions(fetchedPredictions);
         setShowSuggestions(fetchedPredictions.length > 0);
       }
@@ -243,7 +284,33 @@ const GooglePlacesTextInput = forwardRef<
     const fetchPlaceDetails = async (
       placeId: string
     ): Promise<PlaceDetailsFields | null> => {
-      if (!fetchDetails || !placeId) return null;
+      debugLog('DETAILS', `Starting details fetch for placeId: ${placeId}`);
+      debugLog('DETAILS', 'Request params', {
+        placeId,
+        apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
+        detailsProxyUrl,
+        sessionToken,
+        languageCode,
+        detailsFields,
+        fetchDetails,
+        platform: Platform.OS,
+      });
+
+      if (!fetchDetails || !placeId) {
+        debugLog('DETAILS', 'Skipping details fetch', {
+          fetchDetails,
+          placeId,
+        });
+        return null;
+      }
+
+      // Web CORS warning
+      if (Platform.OS === 'web' && !detailsProxyUrl) {
+        debugLog(
+          'DETAILS',
+          'WARNING: Web platform detected without detailsProxyUrl - CORS issues likely'
+        );
+      }
 
       setDetailsLoading(true);
 
@@ -259,10 +326,16 @@ const GooglePlacesTextInput = forwardRef<
       setDetailsLoading(false);
 
       if (error) {
+        debugLog('DETAILS', 'API Error occurred', {
+          errorType: error.constructor.name,
+          errorMessage: error.message,
+          errorStack: error.stack,
+        });
         onError?.(error);
         return null;
       }
 
+      debugLog('DETAILS', 'Success: Details received', details);
       return details;
     };
 
@@ -283,17 +356,39 @@ const GooglePlacesTextInput = forwardRef<
       suggestion: PredictionItem
     ): Promise<void> => {
       const place = suggestion.placePrediction;
+      debugLog(
+        'SELECTION',
+        `User selected place: ${place.structuredFormat.mainText.text}`
+      );
+      debugLog('SELECTION', 'Selected place data', place);
+
       setInputText(place.structuredFormat.mainText.text);
       setShowSuggestions(false);
       Keyboard.dismiss();
 
       if (fetchDetails) {
+        debugLog('SELECTION', 'Fetching place details...');
         setLoading(true);
         const details = await fetchPlaceDetails(place.placeId);
         const enrichedPlace: Place = details ? { ...place, details } : place;
+
+        debugLog(
+          'SELECTION',
+          'Final place object being sent to onPlaceSelect',
+          {
+            hasDetails: !!details,
+            placeKeys: Object.keys(enrichedPlace),
+            detailsKeys: details ? Object.keys(details) : null,
+          }
+        );
+
         onPlaceSelect?.(enrichedPlace, sessionToken);
         setLoading(false);
       } else {
+        debugLog(
+          'SELECTION',
+          'Sending place without details (fetchDetails=false)'
+        );
         onPlaceSelect?.(place, sessionToken);
       }
       setSessionToken(generateSessionToken());
@@ -395,17 +490,28 @@ const GooglePlacesTextInput = forwardRef<
       return { end: paddingValue };
     };
 
+    // Debug initialization
+    useEffect(() => {
+      if (enableDebug) {
+        debugLog('INIT', 'Component initialized with props', {
+          apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
+          fetchDetails,
+          detailsProxyUrl,
+          detailsFields,
+          platform: Platform.OS,
+          minCharsToFetch,
+          debounceDelay,
+        });
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // ✅ Only run on mount
+
     return (
       <View style={[styles.container, style.container]}>
         <View>
           <TextInput
             ref={inputRef}
-            style={[
-              styles.input,
-              style.input,
-              getPadding(),
-              { textAlign: isRTL ? 'right' : 'left' },
-            ]}
+            style={[styles.input, style.input, getPadding(), getTextAlign()]}
             placeholder={placeHolderText}
             placeholderTextColor={style.placeholder?.color || '#666666'}
             value={inputText}
