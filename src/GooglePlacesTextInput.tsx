@@ -95,6 +95,8 @@ interface GooglePlacesTextInputProps {
   detailsFields?: string[];
   onError?: (error: any) => void;
   enableDebug?: boolean; // ✅ Add debug prop
+  scrollEnabled?: boolean;
+  nestedScrollEnabled?: boolean;
 }
 
 interface GooglePlacesTextInputRef {
@@ -135,6 +137,8 @@ const GooglePlacesTextInput = forwardRef<
       detailsFields = [],
       onError,
       enableDebug = false,
+      scrollEnabled = true,
+      nestedScrollEnabled = true,
     },
     ref
   ) => {
@@ -578,9 +582,9 @@ const GooglePlacesTextInput = forwardRef<
               keyExtractor={(item) => item.placePrediction.placeId}
               keyboardShouldPersistTaps="always"
               style={style.suggestionsList}
-              scrollEnabled
+              scrollEnabled={scrollEnabled}
               bounces={false}
-              nestedScrollEnabled
+              nestedScrollEnabled={nestedScrollEnabled}
             />
           </View>
         )}
