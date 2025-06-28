@@ -182,6 +182,19 @@ const PlaceDetailsExample = () => {
 ```
 </details>
 
+<details>
+<summary>Example with scroll configuration</summary>
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  onPlaceSelect={handlePlaceSelect}
+  scrollEnabled={false}
+  nestedScrollEnabled={false}
+/>
+```
+</details>
+
 ## Props
 
 | Prop | Type | Required | Default | Description |
@@ -210,6 +223,8 @@ const PlaceDetailsExample = () => {
 | forceRTL | boolean | No | - | Force RTL layout (auto-detected if not provided) |
 | style | GooglePlacesTextInputStyles | No | {} | Custom styling object |
 | hideOnKeyboardDismiss | boolean | No | false | Hide suggestions when keyboard is dismissed |
+| scrollEnabled | boolean | No | true | Enable/disable scrolling in the suggestions list |
+| nestedScrollEnabled | boolean | No | true | Enable/disable nested scrolling for the suggestions list |
 | **Error Handling & Debugging** |
 | onError | (error: any) => void | No | - | Callback when API errors occur |
 | enableDebug | boolean | No | false | Enable detailed console logging for troubleshooting |

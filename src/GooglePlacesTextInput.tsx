@@ -80,9 +80,9 @@ interface GooglePlacesTextInputProps {
   languageCode?: string;
   includedRegionCodes?: string[];
   types?: string[];
-  biasPrefixText?: (text: string) => string; // ✅ Function that transforms text
+  biasPrefixText?: (text: string) => string;
   minCharsToFetch?: number;
-  onPlaceSelect: (place: Place, sessionToken?: string | null) => void; // ✅ Remove | null
+  onPlaceSelect: (place: Place, sessionToken?: string | null) => void;
   onTextChange?: (text: string) => void;
   debounceDelay?: number;
   showLoadingIndicator?: boolean;
@@ -90,13 +90,13 @@ interface GooglePlacesTextInputProps {
   forceRTL?: boolean;
   style?: GooglePlacesTextInputStyles;
   hideOnKeyboardDismiss?: boolean;
-  fetchDetails?: boolean;
-  detailsProxyUrl?: string | null; // ✅ Add | null to match JS
-  detailsFields?: string[];
-  onError?: (error: any) => void;
-  enableDebug?: boolean; // ✅ Add debug prop
   scrollEnabled?: boolean;
   nestedScrollEnabled?: boolean;
+  fetchDetails?: boolean;
+  detailsProxyUrl?: string | null;
+  detailsFields?: string[];
+  onError?: (error: any) => void;
+  enableDebug?: boolean;
 }
 
 interface GooglePlacesTextInputRef {
@@ -132,13 +132,13 @@ const GooglePlacesTextInput = forwardRef<
       forceRTL = undefined,
       style = {},
       hideOnKeyboardDismiss = false,
+      scrollEnabled = true,
+      nestedScrollEnabled = true,
       fetchDetails = false,
       detailsProxyUrl = null,
       detailsFields = [],
       onError,
       enableDebug = false,
-      scrollEnabled = true,
-      nestedScrollEnabled = true,
     },
     ref
   ) => {
@@ -581,10 +581,10 @@ const GooglePlacesTextInput = forwardRef<
               renderItem={renderSuggestion}
               keyExtractor={(item) => item.placePrediction.placeId}
               keyboardShouldPersistTaps="always"
-              style={style.suggestionsList}
               scrollEnabled={scrollEnabled}
-              bounces={false}
               nestedScrollEnabled={nestedScrollEnabled}
+              bounces={false}
+              style={style.suggestionsList}
             />
           </View>
         )}
