@@ -138,6 +138,25 @@ const App = () => {
           }}
         />
       </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Scroll Disabled Example</Text>
+        <GooglePlacesTextInput
+          apiKey="YOUR_API_KEY_HERE"
+          placeHolderText="Try scrolling these results"
+          onPlaceSelect={(place) => {
+            console.log('Scroll disabled example, selected:', place);
+          }}
+          scrollEnabled={false}
+          nestedScrollEnabled={false}
+          style={{
+            container: {
+              width: '100%',
+              paddingHorizontal: 16,
+            },
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 };
