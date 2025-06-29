@@ -183,15 +183,21 @@ const PlaceDetailsExample = () => {
 </details>
 
 <details>
-<summary>Example with scroll configuration</summary>
+<summary>Example embed in vertical ScrollView</summary>
 
 ```javascript
-<GooglePlacesTextInput
-  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
-  onPlaceSelect={handlePlaceSelect}
-  scrollEnabled={false}
-  nestedScrollEnabled={false}
-/>
+<ScrollView
+  keyboardShouldPersistTaps="handled"
+  nestedScrollEnabled={true}
+>
+  <Text>Fill in your address</Text>
+  <GooglePlacesTextInput
+    apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+    onPlaceSelect={handlePlaceSelect}
+    scrollEnabled={false}
+    nestedScrollEnabled={false}
+  />
+</ScrollView>
 ```
 </details>
 

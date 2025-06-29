@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, View, Text } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, ScrollView } from 'react-native';
 import GooglePlacesTextInput from 'react-native-google-places-textinput';
 
 const App = () => {
@@ -65,6 +65,7 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Basic usage example with minimal configuration */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Basic Example</Text>
         <GooglePlacesTextInput
@@ -76,6 +77,7 @@ const App = () => {
         />
       </View>
 
+      {/* Example showing custom styling and filtered place types */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Styled Example</Text>
         <GooglePlacesTextInput
@@ -90,6 +92,7 @@ const App = () => {
         />
       </View>
 
+      {/* Example demonstrating how to fetch detailed place information */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Place Details Example</Text>
         <GooglePlacesTextInput
@@ -139,23 +142,29 @@ const App = () => {
         />
       </View>
 
+      {/* This example shows how to properly integrate GooglePlacesTextInput inside a vertical ScrollView */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Scroll Disabled Example</Text>
-        <GooglePlacesTextInput
-          apiKey="YOUR_API_KEY_HERE"
-          placeHolderText="Try scrolling these results"
-          onPlaceSelect={(place) => {
-            console.log('Scroll disabled example, selected:', place);
-          }}
-          scrollEnabled={false}
-          nestedScrollEnabled={false}
-          style={{
-            container: {
-              width: '100%',
-              paddingHorizontal: 16,
-            },
-          }}
-        />
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
+        >
+          <Text style={styles.sectionTitle}>Scroll Disabled Example</Text>
+          <GooglePlacesTextInput
+            apiKey="YOUR_API_KEY_HERE"
+            placeHolderText="Try scrolling these results"
+            onPlaceSelect={(place) => {
+              console.log('Scroll disabled example, selected:', place);
+            }}
+            scrollEnabled={false}
+            nestedScrollEnabled={false}
+            style={{
+              container: {
+                width: '100%',
+                paddingHorizontal: 16,
+              },
+            }}
+          />
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
