@@ -5,7 +5,14 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type {
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+  TextInputProps,
+  TextInputFocusEventData,
+  NativeSyntheticEvent,
+} from 'react-native';
 import {
   ActivityIndicator,
   FlatList,
@@ -72,7 +79,9 @@ interface GooglePlacesTextInputStyles {
   };
 }
 
-interface GooglePlacesTextInputProps {
+type TextInputInheritedProps = Pick<TextInputProps, 'onFocus' | 'onBlur'>;
+
+interface GooglePlacesTextInputProps extends TextInputInheritedProps {
   apiKey: string;
   value?: string;
   placeHolderText?: string;
@@ -139,6 +148,8 @@ const GooglePlacesTextInput = forwardRef<
       detailsFields = [],
       onError,
       enableDebug = false,
+      onFocus,
+      onBlur,
     },
     ref
   ) => {
@@ -398,7 +409,11 @@ const GooglePlacesTextInput = forwardRef<
       setSessionToken(generateSessionToken());
     };
 
-    const handleFocus = (): void => {
+    const handleFocus = (
+      event: NativeSyntheticEvent<TextInputFocusEventData>
+    ): void => {
+      onFocus?.(event);
+
       if (skipNextFocusFetch.current) {
         skipNextFocusFetch.current = false;
         return;
@@ -407,6 +422,20 @@ const GooglePlacesTextInput = forwardRef<
         fetchPredictions(inputText);
         setShowSuggestions(true);
       }
+    };
+
+    const handleBlur = (
+      event: NativeSyntheticEvent<TextInputFocusEventData>
+    ): void => {
+      onBlur?.(event);
+
+      setTimeout(() => {
+        if (suggestionPressing.current) {
+          suggestionPressing.current = false;
+        } else {
+          setShowSuggestions(false);
+        }
+      }, 10);
     };
 
     const renderSuggestion = ({ item }: { item: PredictionItem }) => {
@@ -521,15 +550,7 @@ const GooglePlacesTextInput = forwardRef<
             value={inputText}
             onChangeText={handleTextChange}
             onFocus={handleFocus}
-            onBlur={() => {
-              setTimeout(() => {
-                if (suggestionPressing.current) {
-                  suggestionPressing.current = false;
-                } else {
-                  setShowSuggestions(false);
-                }
-              }, 10);
-            }}
+            onBlur={handleBlur}
             clearButtonMode="never" // Disable iOS native clear button
           />
 
