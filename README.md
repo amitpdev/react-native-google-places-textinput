@@ -211,6 +211,8 @@ const PlaceDetailsExample = () => {
 | placeHolderText | string | No | - | Placeholder text for the input |
 | onPlaceSelect | (place: Place, sessionToken?: string) => void | Yes | - | Callback when a place is selected |
 | onTextChange | (text: string) => void | No | - | Callback when input text changes |
+| onFocus | (event: NativeSyntheticEvent<TextInputFocusEventData>) => void | No | - | Callback when input is focused |
+| onBlur | (event: NativeSyntheticEvent<TextInputFocusEventData>) => void | No | - | Callback when input is blurred |
 | **Search Configuration** |
 | proxyUrl | string | No | - | Custom proxy URL for API requests (Required for Expo web) |
 | languageCode | string | No | - | Language code (e.g., 'en', 'fr') |
