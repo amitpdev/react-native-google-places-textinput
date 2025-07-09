@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import type { ReactNode } from 'react';
 import type {
   StyleProp,
   TextStyle,
@@ -72,11 +73,24 @@ interface GooglePlacesTextInputStyles {
     secondary?: StyleProp<TextStyle>;
   };
   loadingIndicator?: {
-    color?: string; // ✅ Keep as string, not StyleProp
+    color?: string;
   };
   placeholder?: {
-    color?: string; // ✅ Keep as string, not StyleProp
+    color?: string;
   };
+  clearButtonText?: StyleProp<ViewStyle>;
+}
+
+interface GooglePlacesAccessibilityLabels {
+  input?: string;
+  clearButton?: string;
+  loadingIndicator?: string;
+  /**
+   * A function that receives a place prediction and returns a descriptive string
+   * for the suggestion item.
+   * @example (prediction) => `Select ${prediction.structuredFormat.mainText.text}, ${prediction.structuredFormat.secondaryText?.text}`
+   */
+  suggestionItem?: (prediction: PlacePrediction) => string;
 }
 
 type TextInputInheritedProps = Pick<TextInputProps, 'onFocus' | 'onBlur'>;
@@ -98,6 +112,7 @@ interface GooglePlacesTextInputProps extends TextInputInheritedProps {
   showClearButton?: boolean;
   forceRTL?: boolean;
   style?: GooglePlacesTextInputStyles;
+  clearElement?: ReactNode;
   hideOnKeyboardDismiss?: boolean;
   scrollEnabled?: boolean;
   nestedScrollEnabled?: boolean;
@@ -106,10 +121,12 @@ interface GooglePlacesTextInputProps extends TextInputInheritedProps {
   detailsFields?: string[];
   onError?: (error: any) => void;
   enableDebug?: boolean;
+  accessibilityLabels?: GooglePlacesAccessibilityLabels;
 }
 
 interface GooglePlacesTextInputRef {
   clear: () => void;
+  blur: () => void;
   focus: () => void;
   getSessionToken: () => string | null;
 }
@@ -140,6 +157,7 @@ const GooglePlacesTextInput = forwardRef<
       showClearButton = true,
       forceRTL = undefined,
       style = {},
+      clearElement,
       hideOnKeyboardDismiss = false,
       scrollEnabled = true,
       nestedScrollEnabled = true,
@@ -150,6 +168,7 @@ const GooglePlacesTextInput = forwardRef<
       enableDebug = false,
       onFocus,
       onBlur,
+      accessibilityLabels = {},
     },
     ref
   ) => {
@@ -209,6 +228,9 @@ const GooglePlacesTextInput = forwardRef<
         setPredictions([]);
         setShowSuggestions(false);
         setSessionToken(generateSessionToken());
+      },
+      blur: () => {
+        inputRef.current?.blur();
       },
       focus: () => {
         inputRef.current?.focus();
@@ -452,8 +474,18 @@ const GooglePlacesTextInput = forwardRef<
       const backgroundColor =
         suggestionsContainerStyle?.backgroundColor || '#efeff1';
 
+      const defaultAccessibilityLabel = `${mainText.text}${
+        secondaryText ? `, ${secondaryText.text}` : ''
+      }`;
+      const accessibilityLabel =
+        accessibilityLabels.suggestionItem?.(item.placePrediction) ||
+        defaultAccessibilityLabel;
+
       return (
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          accessibilityHint="Double tap to select this place"
           style={[
             styles.suggestionItem,
             { backgroundColor },
@@ -541,7 +573,7 @@ const GooglePlacesTextInput = forwardRef<
         });
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // ✅ Only run on mount
+    }, []);
 
     return (
       <View style={[styles.container, style.container]}>
@@ -556,6 +588,8 @@ const GooglePlacesTextInput = forwardRef<
             onFocus={handleFocus}
             onBlur={handleBlur}
             clearButtonMode="never" // Disable iOS native clear button
+            accessibilityRole="search"
+            accessibilityLabel={accessibilityLabels.input || placeHolderText}
           />
 
           {/* Clear button - shown only if showClearButton is true */}
@@ -574,15 +608,28 @@ const GooglePlacesTextInput = forwardRef<
                 setSessionToken(generateSessionToken());
                 inputRef.current?.focus();
               }}
+              accessibilityRole="button"
+              accessibilityLabel={
+                accessibilityLabels.clearButton || 'Clear input text'
+              }
             >
-              <Text
-                style={Platform.select({
-                  ios: styles.iOSclearButton,
-                  android: styles.androidClearButton,
-                })}
-              >
-                {'×'}
-              </Text>
+              {clearElement || (
+                <View style={styles.clearTextWrapper}>
+                  <Text
+                    style={[
+                      Platform.select({
+                        ios: styles.iOSclearText,
+                        android: styles.androidClearText,
+                      }),
+                      style.clearButtonText,
+                    ]}
+                    accessibilityElementsHidden={true}
+                    importantForAccessibility="no-hide-descendants"
+                  >
+                    {'×'}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           )}
 
@@ -592,6 +639,10 @@ const GooglePlacesTextInput = forwardRef<
               style={[styles.loadingIndicator, getIconPosition(45)]}
               size={'small'}
               color={style.loadingIndicator?.color || '#000000'}
+              accessibilityLiveRegion="polite"
+              accessibilityLabel={
+                accessibilityLabels.loadingIndicator || 'Loading suggestions'
+              }
             />
           )}
         </View>
@@ -610,6 +661,8 @@ const GooglePlacesTextInput = forwardRef<
               nestedScrollEnabled={nestedScrollEnabled}
               bounces={false}
               style={style.suggestionsList}
+              accessibilityRole="list"
+              accessibilityLabel={`${predictions.length} place suggestion resuts`}
             />
           </View>
         )}
@@ -662,30 +715,27 @@ const styles = StyleSheet.create({
     top: '50%',
     transform: [{ translateY: -10 }],
   },
-  iOSclearButton: {
-    fontSize: 18,
+  clearTextWrapper: {
+    backgroundColor: '#999',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  //this is never going to be consistent between different phone fonts and sizes
+  iOSclearText: {
+    fontSize: 22,
     fontWeight: '400',
     color: 'white',
-    backgroundColor: '#999',
-    width: 25,
-    height: 25,
-    borderRadius: 12.5,
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    lineHeight: 19,
+    lineHeight: 24,
     includeFontPadding: false,
   },
-  androidClearButton: {
+  androidClearText: {
     fontSize: 24,
     fontWeight: '400',
     color: 'white',
-    backgroundColor: '#999',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    lineHeight: 20,
+    lineHeight: 25.5,
     includeFontPadding: false,
   },
 });
@@ -698,6 +748,7 @@ export type {
   PlaceDetailsFields,
   PlacePrediction,
   PlaceStructuredFormat,
+  GooglePlacesAccessibilityLabels,
 };
 
 export default GooglePlacesTextInput;

@@ -23,6 +23,7 @@ type Styles = {
   placeholder?: {
     color?: string;
   };
+  clearButtonText?: ViewStyle;
 }
 ```
 
@@ -34,7 +35,13 @@ Understanding the component's structure helps with styling. Here's how the compo
 <View style={[styles.container, style.container]}>
   <View>
     <TextInput style={[styles.input, style.input, ...]} />
-    <TouchableOpacity> (Clear button) </TouchableOpacity>
+    <TouchableOpacity> 
+      {clearElement || (
+        <View style={styles.clearTextWrapper}>
+          <Text style={[styles.clearText, style.clearButtonText]}>×</Text>
+        </View>
+      )}
+    </TouchableOpacity>
     <ActivityIndicator /> (Loading indicator)
   </View>
   <View style={[styles.suggestionsContainer, style.suggestionsContainer]}>
@@ -75,6 +82,10 @@ const styles = {
   },
   placeholder: {
     color: '#888888',
+  },
+  clearButtonText: {
+    color: '#FF0000', // Red X
+    fontSize: 20,
   }
 };
 ```
@@ -129,6 +140,11 @@ const materialStyles = {
   },
   placeholder: {
     color: '#9E9E9E',
+  },
+  clearButtonText: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '400',
   }
 };
 ```
@@ -180,8 +196,47 @@ const iosStyles = {
   },
   placeholder: {
     color: '#8E8E93',
+  },
+  clearButtonText: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '400',
   }
 };
+```
+
+## ✨ NEW: Custom Close Element
+
+You can now provide a custom close element instead of the default "×" text:
+
+```javascript
+import { Ionicons } from '@expo/vector-icons';
+
+<GooglePlacesTextInput
+  apiKey="YOUR_KEY"
+  clearElement={
+    <Icon name="close-circle" size={24} color="#999" />
+  }
+  // ...other props
+/>
+```
+
+## ✨ NEW: Accessibility Labels
+
+The component now supports comprehensive accessibility customization:
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_KEY"
+  accessibilityLabels={{
+    input: 'Search for places',
+    clearButton: 'Clear search text',
+    loadingIndicator: 'Searching for places',
+    suggestionItem: (prediction) => 
+      `Select ${prediction.structuredFormat.mainText.text}, ${prediction.structuredFormat.secondaryText?.text || ''}`
+  }}
+  // ...other props
+/>
 ```
 
 ## Styling the Suggestions List
@@ -229,6 +284,26 @@ The clear button is automatically styled based on platform (iOS or Android) but 
   showClearButton={false}
   // ...other props
 />
+```
+
+## ✨ NEW: Programmatic Control
+
+The component now exposes a `blur()` method in addition to the existing `clear()` and `focus()` methods:
+
+```javascript
+const inputRef = useRef();
+
+// Blur the input
+inputRef.current?.blur();
+
+// Clear the input
+inputRef.current?.clear();
+
+// Focus the input
+inputRef.current?.focus();
+
+// Get current session token
+const token = inputRef.current?.getSessionToken();
 ```
 
 ## RTL Support
