@@ -179,6 +179,10 @@ const GooglePlacesTextInput = forwardRef<
       };
     }, []);
 
+    useEffect(() => {
+      setInputText(value ?? '');
+    }, [value]);
+
     // Add keyboard listener
     useEffect(() => {
       if (hideOnKeyboardDismiss) {
