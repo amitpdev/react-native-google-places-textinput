@@ -6,6 +6,7 @@ interface FetchPredictionsParams {
   text: string;
   apiKey?: string;
   proxyUrl?: string;
+  proxyHeaders?: Record<string, string> | null;
   sessionToken?: string | null;
   languageCode?: string;
   includedRegionCodes?: string[];
@@ -17,6 +18,7 @@ interface FetchPlaceDetailsParams {
   placeId: string;
   apiKey?: string;
   detailsProxyUrl?: string | null;
+  detailsProxyHeaders?: Record<string, string> | null;
   sessionToken?: string | null;
   languageCode?: string;
   detailsFields?: string[];
@@ -39,6 +41,7 @@ export const fetchPredictions = async ({
   text,
   apiKey,
   proxyUrl,
+  proxyHeaders,
   sessionToken,
   languageCode,
   includedRegionCodes,
@@ -56,6 +59,12 @@ export const fetchPredictions = async ({
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
+
+    if (proxyUrl && proxyHeaders) {
+      Object.entries(proxyHeaders).forEach(([key, value]) => {
+        headers[key] = value;
+      });
+    }
 
     if (apiKey) {
       headers['X-Goog-Api-Key'] = apiKey;
@@ -96,6 +105,7 @@ export const fetchPlaceDetails = async ({
   placeId,
   apiKey,
   detailsProxyUrl,
+  detailsProxyHeaders,
   sessionToken,
   languageCode,
   detailsFields = [],
@@ -112,6 +122,12 @@ export const fetchPlaceDetails = async ({
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
+
+    if (detailsProxyUrl && detailsProxyHeaders) {
+      Object.entries(detailsProxyHeaders).forEach(([key, value]) => {
+        headers[key] = value;
+      });
+    }
 
     if (apiKey) {
       headers['X-Goog-Api-Key'] = apiKey;

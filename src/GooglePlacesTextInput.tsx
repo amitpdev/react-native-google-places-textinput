@@ -100,6 +100,7 @@ interface GooglePlacesTextInputProps extends TextInputInheritedProps {
   value?: string;
   placeHolderText?: string;
   proxyUrl?: string;
+  proxyHeaders?: Record<string, string>;
   languageCode?: string;
   includedRegionCodes?: string[];
   types?: string[];
@@ -118,6 +119,7 @@ interface GooglePlacesTextInputProps extends TextInputInheritedProps {
   nestedScrollEnabled?: boolean;
   fetchDetails?: boolean;
   detailsProxyUrl?: string | null;
+  detailsProxyHeaders?: Record<string, string>;
   detailsFields?: string[];
   onError?: (error: any) => void;
   enableDebug?: boolean;
@@ -145,6 +147,7 @@ const GooglePlacesTextInput = forwardRef<
       value,
       placeHolderText,
       proxyUrl,
+      proxyHeaders = null,
       languageCode,
       includedRegionCodes,
       types = [],
@@ -163,6 +166,7 @@ const GooglePlacesTextInput = forwardRef<
       nestedScrollEnabled = true,
       fetchDetails = false,
       detailsProxyUrl = null,
+      detailsProxyHeaders = null,
       detailsFields = [],
       onError,
       enableDebug = false,
@@ -271,6 +275,7 @@ const GooglePlacesTextInput = forwardRef<
         text,
         apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
         proxyUrl,
+        proxyHeaders,
         sessionToken,
         languageCode,
         includedRegionCodes,
@@ -294,6 +299,7 @@ const GooglePlacesTextInput = forwardRef<
           text,
           apiKey,
           proxyUrl,
+          proxyHeaders,
           sessionToken,
           languageCode,
           includedRegionCodes,
@@ -330,6 +336,7 @@ const GooglePlacesTextInput = forwardRef<
         placeId,
         apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
         detailsProxyUrl,
+        detailsProxyHeaders,
         sessionToken,
         languageCode,
         detailsFields,

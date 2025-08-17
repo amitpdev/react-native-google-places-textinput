@@ -215,6 +215,7 @@ const PlaceDetailsExample = () => {
 | onBlur | (event: NativeSyntheticEvent<TextInputFocusEventData>) => void | No | - | Callback when input is blurred |
 | **Search Configuration** |
 | proxyUrl | string | No | - | Custom proxy URL for API requests (Required for Expo web) |
+| proxyHeaders | object | No | - | Headers to pass to the proxy (ex. { Authorization: 'Bearer AUTHTOKEN' } ) |
 | languageCode | string | No | - | Language code (e.g., 'en', 'fr') |
 | includedRegionCodes | string[] | No | - | Array of region codes to filter results |
 | types | string[] | No | [] | Array of place types to filter |
@@ -224,6 +225,7 @@ const PlaceDetailsExample = () => {
 | **Place Details Configuration** |
 | fetchDetails | boolean | No | false | Automatically fetch place details when a place is selected |
 | detailsProxyUrl | string | No | null | Custom proxy URL for place details requests (Required on Expo web)|
+| detailsProxyHeaders | object | No | - | Headers to pass to the place details proxy (ex. { Authorization: 'Bearer AUTHTOKEN' } ) |
 | detailsFields | string[] | No | ['displayName', 'formattedAddress', 'location', 'id'] | Array of fields to include in the place details response. see [Valid Fields](https://developers.google.com/maps/documentation/places/web-service/place-details#fieldmask) |
 | **UI Customization** |
 | showLoadingIndicator | boolean | No | true | Show loading spinner during API requests |
