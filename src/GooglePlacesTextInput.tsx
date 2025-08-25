@@ -366,6 +366,7 @@ const GooglePlacesTextInput = forwardRef<
         placeId,
         apiKey,
         detailsProxyUrl,
+        detailsProxyHeaders,
         sessionToken,
         languageCode,
         detailsFields,
