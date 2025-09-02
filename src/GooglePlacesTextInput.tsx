@@ -472,7 +472,13 @@ const GooglePlacesTextInput = forwardRef<
       }, 10);
     };
 
-    const renderSuggestion = ({ item }: { item: PredictionItem }) => {
+    const renderSuggestion = ({
+      item,
+      index,
+    }: {
+      item: PredictionItem;
+      index: number;
+    }) => {
       const { mainText, secondaryText } = item.placePrediction.structuredFormat;
 
       // Safely extract backgroundColor from style
@@ -495,6 +501,7 @@ const GooglePlacesTextInput = forwardRef<
           accessibilityLabel={accessibilityLabel}
           accessibilityHint="Double tap to select this place"
           style={[
+            index > 0 ? styles.separatorLine : {},
             styles.suggestionItem,
             { backgroundColor },
             style.suggestionItem,
@@ -698,8 +705,10 @@ const styles = StyleSheet.create({
   },
   suggestionItem: {
     padding: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#c8c7cc',
+  },
+  separatorLine: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#c8c7cc',
   },
   mainText: {
     fontSize: 16,
