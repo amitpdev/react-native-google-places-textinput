@@ -225,6 +225,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 The component now supports comprehensive accessibility customization:
 
+{% raw %}
 ```javascript
 <GooglePlacesTextInput
   apiKey="YOUR_KEY"
@@ -238,6 +239,7 @@ The component now supports comprehensive accessibility customization:
   // ...other props
 />
 ```
+{% endraw %}
 
 ## Styling the Suggestions List
 

@@ -338,6 +338,10 @@ MIT
 
 ---
 
-Written by Amit Palomo
+Available on Github:
+[https://github.com/amitpdev/react-native-google-places-textinput](https://github.com/amitpdev/react-native-google-places-textinput)
+
+Written by [Amit Palomo](https://github.com/amitpdev)  
+See other projects I built on [my blog](https://amitpdev.github.io)
 
 Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
