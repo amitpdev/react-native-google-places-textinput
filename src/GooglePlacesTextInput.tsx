@@ -689,12 +689,13 @@ const GooglePlacesTextInput = forwardRef<
 const styles = StyleSheet.create({
   container: {},
   input: {
-    height: 50,
+    flex: 1,
     borderRadius: 6,
     borderWidth: 1,
     paddingHorizontal: 10,
     backgroundColor: 'white',
     fontSize: 16,
+    paddingVertical: 16,
   },
   suggestionsContainer: {
     backgroundColor: '#efeff1', // default background
