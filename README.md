@@ -16,6 +16,8 @@ A customizable React Native TextInput component for Google Places Autocomplete u
 - Extended place details fetching (Optional)
 - Compatible with both Expo and non-Expo projects
 - Works with Expo Web
+- Supports all TextInput props (autoCapitalize, keyboardType, etc.)
+- Control suggestion text display (lines, ellipsis)
 
 ## Preview
 
@@ -201,6 +203,37 @@ const PlaceDetailsExample = () => {
 ```
 </details>
 
+<details>
+<summary>Example with TextInput props and suggestion text control</summary>
+
+```javascript
+const CustomizedExample = () => {
+  const handlePlaceSelect = (place) => {
+    console.log('Selected place:', place);
+  };
+
+  return (
+    <GooglePlacesTextInput
+      apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+      onPlaceSelect={handlePlaceSelect}
+      // TextInput props
+      autoCapitalize="words"
+      autoCorrect={false}
+      keyboardType="default"
+      returnKeyType="search"
+      textContentType="location"
+      // Limit suggestion text to single line with ellipsis
+      suggestionTextProps={{
+        mainTextNumberOfLines: 1,
+        secondaryTextNumberOfLines: 1,
+        ellipsizeMode: 'tail',
+      }}
+    />
+  );
+};
+```
+</details>
+
 ## Props
 
 | Prop | Type | Required | Default | Description |
@@ -235,6 +268,10 @@ const PlaceDetailsExample = () => {
 | hideOnKeyboardDismiss | boolean | No | false | Hide suggestions when keyboard is dismissed |
 | scrollEnabled | boolean | No | true | Enable/disable scrolling in the suggestions list |
 | nestedScrollEnabled | boolean | No | true | Enable/disable nested scrolling for the suggestions list |
+| suggestionTextProps | SuggestionTextProps | No | {} | Control suggestion text display (lines, ellipsis). [Details](./docs/styling-guide.md#suggestion-text-display-control) |
+| accessibilityLabels | GooglePlacesAccessibilityLabels | No | {} | Custom accessibility labels |
+| **TextInput Props** |
+| ...restProps | TextInputProps | No | - | All TextInput props supported. [Details](./docs/styling-guide.md#textinput-props-support) |
 | **Error Handling & Debugging** |
 | onError | (error: any) => void | No | - | Callback when API errors occur |
 | enableDebug | boolean | No | false | Enable detailed console logging for troubleshooting |
@@ -326,7 +363,7 @@ type Styles = {
 }
 ```
 
-For detailed styling examples and a complete guide, see our [Styling Guide](./docs/styling-guide.md).
+For detailed styling examples, TextInput props usage, and suggestion text control, see our [Styling Guide](./docs/styling-guide.md).
 
 ## Contributing
 

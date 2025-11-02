@@ -11,4 +11,6 @@ export type {
   GooglePlacesTextInputProps,
   GooglePlacesTextInputRef,
   GooglePlacesTextInputStyles,
+  GooglePlacesAccessibilityLabels,
+  SuggestionTextProps,
 } from './GooglePlacesTextInput';

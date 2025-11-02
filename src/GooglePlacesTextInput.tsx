@@ -93,9 +93,34 @@ interface GooglePlacesAccessibilityLabels {
   suggestionItem?: (prediction: PlacePrediction) => string;
 }
 
-type TextInputInheritedProps = Pick<TextInputProps, 'onFocus' | 'onBlur'>;
+interface SuggestionTextProps {
+  /**
+   * Maximum number of lines for the main text (place name)
+   * @default undefined (no limit)
+   */
+  mainTextNumberOfLines?: number;
+  /**
+   * Maximum number of lines for the secondary text (address)
+   * @default undefined (no limit)
+   */
+  secondaryTextNumberOfLines?: number;
+  /**
+   * Determines how text is truncated when it exceeds the number of lines
+   * @default 'tail'
+   */
+  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
+}
 
-interface GooglePlacesTextInputProps extends TextInputInheritedProps {
+interface GooglePlacesTextInputProps
+  extends Omit<
+    TextInputProps,
+    | 'value'
+    | 'onChangeText'
+    | 'ref'
+    | 'style'
+    | 'placeholder'
+    | 'placeholderTextColor'
+  > {
   apiKey: string;
   value?: string;
   placeHolderText?: string;
@@ -124,6 +149,7 @@ interface GooglePlacesTextInputProps extends TextInputInheritedProps {
   onError?: (error: any) => void;
   enableDebug?: boolean;
   accessibilityLabels?: GooglePlacesAccessibilityLabels;
+  suggestionTextProps?: SuggestionTextProps;
 }
 
 interface GooglePlacesTextInputRef {
@@ -173,6 +199,8 @@ const GooglePlacesTextInput = forwardRef<
       onFocus,
       onBlur,
       accessibilityLabels = {},
+      suggestionTextProps = {},
+      ...restTextInputProps
     },
     ref
   ) => {
@@ -524,6 +552,8 @@ const GooglePlacesTextInput = forwardRef<
               style.suggestionText?.main,
               getTextAlign(),
             ]}
+            numberOfLines={suggestionTextProps.mainTextNumberOfLines}
+            ellipsizeMode={suggestionTextProps.ellipsizeMode || 'tail'}
           >
             {mainText.text}
           </Text>
@@ -534,6 +564,8 @@ const GooglePlacesTextInput = forwardRef<
                 style.suggestionText?.secondary,
                 getTextAlign(),
               ]}
+              numberOfLines={suggestionTextProps.secondaryTextNumberOfLines}
+              ellipsizeMode={suggestionTextProps.ellipsizeMode || 'tail'}
             >
               {secondaryText.text}
             </Text>
@@ -594,6 +626,7 @@ const GooglePlacesTextInput = forwardRef<
       <View style={[styles.container, style.container]}>
         <View>
           <TextInput
+            {...restTextInputProps}
             ref={inputRef}
             style={[styles.input, style.input, getPadding(), getTextAlign()]}
             placeholder={placeHolderText}
@@ -767,6 +800,7 @@ export type {
   PlacePrediction,
   PlaceStructuredFormat,
   GooglePlacesAccessibilityLabels,
+  SuggestionTextProps,
 };
 
 export default GooglePlacesTextInput;

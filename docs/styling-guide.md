@@ -320,6 +320,99 @@ The component automatically handles RTL layouts based on the text direction. You
 />
 ```
 
+## TextInput Props Support
+
+All standard React Native `TextInput` props are supported and can be passed directly to the component:
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  onPlaceSelect={handlePlaceSelect}
+  // TextInput props
+  autoCapitalize="words"
+  autoCorrect={false}
+  keyboardType="default"
+  returnKeyType="search"
+  textContentType="location"
+  autoFocus={true}
+  maxLength={100}
+  editable={true}
+/>
+```
+
+**Common TextInput props:**
+- `autoCapitalize` - Control auto-capitalization behavior
+- `autoCorrect` - Enable/disable auto-correction
+- `keyboardType` - Set keyboard type (default, email-address, numeric, phone-pad, etc.)
+- `returnKeyType` - Customize the return key (done, search, next, go, etc.)
+- `textContentType` - Optimize keyboard suggestions (iOS: location, streetAddressLine1, etc.)
+- `autoFocus` - Auto-focus the input on mount
+- `maxLength` - Limit input length
+- `editable` - Make the input read-only
+- `secureTextEntry`, `multiline`, `selectTextOnFocus`, and many more
+
+See the [React Native TextInput documentation](https://reactnative.dev/docs/textinput#props) for a complete list.
+
+## Suggestion Text Display Control
+
+Control how suggestion text is displayed using the `suggestionTextProps` prop:
+
+```typescript
+type SuggestionTextProps = {
+  mainTextNumberOfLines?: number;        // Max lines for place name
+  secondaryTextNumberOfLines?: number;   // Max lines for address
+  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
+}
+```
+
+### Example: Single-line suggestions
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  onPlaceSelect={handlePlaceSelect}
+  suggestionTextProps={{
+    mainTextNumberOfLines: 1,
+    secondaryTextNumberOfLines: 1,
+    ellipsizeMode: 'tail',
+  }}
+/>
+```
+
+### Example: Two-line place name, one-line address
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  onPlaceSelect={handlePlaceSelect}
+  suggestionTextProps={{
+    mainTextNumberOfLines: 2,
+    secondaryTextNumberOfLines: 1,
+    ellipsizeMode: 'tail',
+  }}
+/>
+```
+
+### Example: Middle ellipsis
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  onPlaceSelect={handlePlaceSelect}
+  suggestionTextProps={{
+    mainTextNumberOfLines: 1,
+    ellipsizeMode: 'middle', // "Very Long Pla...staurant Name"
+  }}
+/>
+```
+
+**Use cases:**
+- Limit vertical space usage in compact UIs
+- Prevent long place names/addresses from wrapping
+- Create a cleaner, more uniform suggestion list
+- Control where the ellipsis appears
+- Or allow unlimited lines by omitting `numberOfLines`
+
 ## Combining with Other Style Systems
 
 If you're using a styling library like styled-components or Tailwind, you can still use this component by generating the style object:
