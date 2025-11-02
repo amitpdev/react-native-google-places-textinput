@@ -251,6 +251,8 @@ const CustomizedExample = () => {
 | proxyHeaders | object | No | - | Headers to pass to the proxy (ex. { Authorization: 'Bearer AUTHTOKEN' } ) |
 | languageCode | string | No | - | Language code (e.g., 'en', 'fr') |
 | includedRegionCodes | string[] | No | - | Array of region codes to filter results |
+| locationBias | Record<string, any> | No | - | Bias search results by location (circle or rectangle). [Details](#location-filtering) |
+| locationRestriction | Record<string, any> | No | - | Restrict search results to location (circle or rectangle). [Details](#location-filtering) |
 | types | string[] | No | [] | Array of place types to filter |
 | biasPrefixText | (text: string) => string | No | - | Optional function to modify the input text before sending to the Places API |
 | minCharsToFetch | number | No | 1 | Minimum characters before triggering search |
@@ -275,6 +277,58 @@ const CustomizedExample = () => {
 | **Error Handling & Debugging** |
 | onError | (error: any) => void | No | - | Callback when API errors occur |
 | enableDebug | boolean | No | false | Enable detailed console logging for troubleshooting |
+
+## Location Filtering
+
+You can filter or bias search results based on geographic location using `locationBias` or `locationRestriction`.
+
+### Location Bias (Soft Filter)
+
+**Biases** results towards a location but can still return results outside the area if they're highly relevant:
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  onPlaceSelect={handlePlaceSelect}
+  locationBias={{
+    circle: {
+      center: {
+        latitude: 37.7937,
+        longitude: -122.3965
+      },
+      radius: 500.0  // meters
+    }
+  }}
+/>
+```
+
+### Location Restriction (Hard Filter)
+
+**Restricts** results to only those within the specified area:
+
+```javascript
+<GooglePlacesTextInput
+  apiKey="YOUR_GOOGLE_PLACES_API_KEY"
+  onPlaceSelect={handlePlaceSelect}
+  locationRestriction={{
+    rectangle: {
+      low: { latitude: 37.7749, longitude: -122.4194 },
+      high: { latitude: 37.8049, longitude: -122.3894 }
+    }
+  }}
+/>
+```
+
+**Supported shapes:**
+- **Circle**: Define center (lat/lng) and radius in meters
+- **Rectangle**: Define southwest and northeast corners (low/high)
+
+**Use cases:**
+- Show places near user's current GPS location
+- Limit results to delivery radius
+- Search within a specific neighborhood or city bounds
+
+For more details, see [Google Places API Location Biasing](https://developers.google.com/maps/documentation/places/web-service/autocomplete#location_biasing).
 
 ## Place Details Fetching
 

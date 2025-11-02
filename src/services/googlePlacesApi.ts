@@ -10,6 +10,8 @@ interface FetchPredictionsParams {
   sessionToken?: string | null;
   languageCode?: string;
   includedRegionCodes?: string[];
+  locationBias?: Record<string, any>;
+  locationRestriction?: Record<string, any>;
   types?: string[];
   biasPrefixText?: (text: string) => string;
 }
@@ -45,6 +47,8 @@ export const fetchPredictions = async ({
   sessionToken,
   languageCode,
   includedRegionCodes,
+  locationBias,
+  locationRestriction,
   types = [],
   biasPrefixText,
 }: FetchPredictionsParams): Promise<PredictionResult> => {
@@ -76,6 +80,8 @@ export const fetchPredictions = async ({
       ...(sessionToken && { sessionToken }),
       ...(includedRegionCodes &&
         includedRegionCodes.length > 0 && { includedRegionCodes }),
+      ...(locationBias && { locationBias }),
+      ...(locationRestriction && { locationRestriction }),
       ...(types.length > 0 && { includedPrimaryTypes: types }),
     };
 

@@ -128,6 +128,8 @@ interface GooglePlacesTextInputProps
   proxyHeaders?: Record<string, string>;
   languageCode?: string;
   includedRegionCodes?: string[];
+  locationBias?: Record<string, any>;
+  locationRestriction?: Record<string, any>;
   types?: string[];
   biasPrefixText?: (text: string) => string;
   minCharsToFetch?: number;
@@ -176,6 +178,8 @@ const GooglePlacesTextInput = forwardRef<
       proxyHeaders = null,
       languageCode,
       includedRegionCodes,
+      locationBias,
+      locationRestriction,
       types = [],
       biasPrefixText,
       minCharsToFetch = 1,
@@ -307,6 +311,8 @@ const GooglePlacesTextInput = forwardRef<
         sessionToken,
         languageCode,
         includedRegionCodes,
+        locationBias,
+        locationRestriction,
         types,
         minCharsToFetch,
       });
@@ -331,6 +337,8 @@ const GooglePlacesTextInput = forwardRef<
           sessionToken,
           languageCode,
           includedRegionCodes,
+          locationBias,
+          locationRestriction,
           types,
           biasPrefixText,
         });
