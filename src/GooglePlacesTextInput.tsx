@@ -542,6 +542,9 @@ const GooglePlacesTextInput = forwardRef<
             { backgroundColor },
             style.suggestionItem,
           ]}
+          onPressIn={() => {
+            suggestionPressing.current = true;
+          }}
           onPress={() => {
             suggestionPressing.current = false;
             handleSuggestionPress(item);
