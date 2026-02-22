@@ -663,7 +663,7 @@ const GooglePlacesTextInput = forwardRef<
             bounces={false}
             style={style.suggestionsList}
             accessibilityRole="list"
-            accessibilityLabel={`${predictions.length} place suggestion resuts`}
+            accessibilityLabel={`${predictions.length} place suggestion results`}
           />
         </View>
       )}

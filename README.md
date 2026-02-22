@@ -47,6 +47,8 @@ yarn add react-native-google-places-textinput
    - Go to "APIs & Services" > "Credentials" and create a new API key
    - Under "API restrictions", make sure "Places API (New)" is selected
 
+> **Security tip:** For production apps, consider using a backend proxy (`proxyUrl` prop) instead of embedding the API key directly. This keeps your key secure on your server.
+
 ## Usage
 
 ### Basic Example
@@ -239,7 +241,7 @@ const CustomizedExample = () => {
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | **Basic Configuration** |
-| apiKey | string | Yes | - | Your Google Places API key |
+| apiKey | string | Yes* | - | Your Google Places API key. *For production, consider using `proxyUrl` instead to keep your key secure on your server |
 | value | string | No | - | Controlled input value |
 | placeHolderText | string | No | - | Placeholder text for the input |
 | onPlaceSelect | (place: Place, sessionToken?: string) => void | Yes | - | Callback when a place is selected |
@@ -247,7 +249,7 @@ const CustomizedExample = () => {
 | onFocus | (event: NativeSyntheticEvent<TextInputFocusEventData>) => void | No | - | Callback when input is focused |
 | onBlur | (event: NativeSyntheticEvent<TextInputFocusEventData>) => void | No | - | Callback when input is blurred |
 | **Search Configuration** |
-| proxyUrl | string | No | - | Custom proxy URL for API requests (Required for Expo web) |
+| proxyUrl | string | No | - | Custom proxy URL for API requests. Use this to keep your API key secure on your server (also required for Expo web) |
 | proxyHeaders | object | No | - | Headers to pass to the proxy (ex. { Authorization: 'Bearer AUTHTOKEN' } ) |
 | languageCode | string | No | - | Language code (e.g., 'en', 'fr') |
 | includedRegionCodes | string[] | No | - | Array of region codes to filter results |
@@ -401,6 +403,7 @@ The component accepts a `style` prop with the following structure:
 ```typescript
 type Styles = {
   container?: ViewStyle;
+  inputContainer?: ViewStyle;
   input?: TextStyle;
   suggestionsContainer?: ViewStyle;
   suggestionItem?: ViewStyle;
